@@ -5,12 +5,15 @@ import os
 import operator
 import utils
 
-from utils.constants import UNIVARIATE_DATASET_NAMES as DATASET_NAMES
-from utils.constants import UNIVARIATE_DATASET_NAMES_2018 as DATASET_NAMES_2018
-from utils.constants import ARCHIVE_NAMES  as ARCHIVE_NAMES
-from utils.constants import CLASSIFIERS
+from utils.constants import UNIVARIATE_DATASET_NAMES as UNIVARIATE_DATASET_NAMES_2015
+from utils.constants import UNIVARIATE_DATASET_NAMES_2018 as UNIVARIATE_DATASET_NAMES_2018
+from utils.constants import ARCHIVE_NAMES as ARCHIVE_NAME
 from utils.constants import ITERATIONS
-from utils.constants import MTS_DATASET_NAMES
+
+from utils.resources import MY_DATA_SETS as DATA_SETS
+from utils.resources import MY_CLASSIFIERS as CLASSIFIERS
+from utils.resources import MY_EXPLANATIONS as EXPLANATIONS
+from utils.resources import MY_EVALUATIONS as EVALUATIONS
 
 ## Reads UCR File
 def readucr(filename):
@@ -20,7 +23,8 @@ def readucr(filename):
     return X, Y
 
 
-## Creates directory for various use
+## Creates directory for various use provided by 
+## https://github.com/hfawaz/dl-4-tsc/blob/master/utils/utils.py
 def create_directory(directory_path):
     if os.path.exists(directory_path):
         return None
@@ -40,6 +44,15 @@ def create_path(root_dir, classifier_name, archive_name):
     else:
         os.makedirs(output_directory)
         return output_directory
+
+
+## Saves model logs TODO:
+def save_logs():
+    return None
+
+## Save model test duration TODO:
+def save_test_duration(output_path, duration):
+    pass
 
 ## Reads dataset
 def read_dataset(root_dir, archive_name, dataset_name):
@@ -90,19 +103,7 @@ def read_all_datasets(root_dir, archive_name, split_val=False):
     cur_root_dir = root_dir.replace('-temp', '')
     dataset_names_to_sort = []
 
-    if archive_name == 'mts_archive':
-
-        for dataset_name in MTS_DATASET_NAMES:
-            root_dir_dataset = cur_root_dir + '/archives/' + archive_name + '/' + dataset_name + '/'
-
-            x_train = np.load(root_dir_dataset + 'x_train.npy')
-            y_train = np.load(root_dir_dataset + 'y_train.npy')
-            x_test = np.load(root_dir_dataset + 'x_test.npy')
-            y_test = np.load(root_dir_dataset + 'y_test.npy')
-
-            datasets_dict[dataset_name] = (x_train.copy(), y_train.copy(), x_test.copy(),
-                                        y_test.copy())
-    elif archive_name == 'UCRArchive_2018':
+    if archive_name == 'UCRArchive_2018':
         for dataset_name in DATASET_NAMES_2018:
             root_dir_dataset = cur_root_dir + '/archives/' + archive_name + '/' + dataset_name + '/'
 
@@ -135,7 +136,7 @@ def read_all_datasets(root_dir, archive_name, split_val=False):
                                         y_test.copy())
 
     else:
-        for dataset_name in DATASET_NAMES:
+        for dataset_name in DATA_SETS:
             root_dir_dataset = cur_root_dir + '/archives/' + archive_name + '/' + dataset_name + '/'
             file_name = root_dir_dataset + dataset_name
             x_train, y_train = readucr(file_name + '_TRAIN')
@@ -148,7 +149,11 @@ def read_all_datasets(root_dir, archive_name, split_val=False):
 
         dataset_names_to_sort.sort(key=operator.itemgetter(1))
 
-        for i in range(len(DATASET_NAMES)):
-            DATASET_NAMES[i] = dataset_names_to_sort[i][0]
+        for i in range(len(DATA_SETS)):
+            DATA_SETS[i] = dataset_names_to_sort[i][0]
 
     return datasets_dict
+
+## Calculate metrics: precision, accuracy, recall + report (duration) TODO:
+def calculate_metrics(outpt_directory, hist, duration, y_pred=None, y_true=None):
+    return None

@@ -1,14 +1,15 @@
 """
-resnet.py
+cote.py
 
-ResNet Classifer
+COTE proposed by Bagnall et al. 2016
+
+Bagnall A, Lines J, Hills J, Bostrom A (2016) Time-series classification with COTE: the collective of
+transformation-based ensembles. In: International conference on data engineering, pp 1548–1549
+
+(fawaz git maybe)
 """
-import tensorflow.keras as keras
-import tensorflow as tf
-import numpy as np
-import time 
 
-class ResNet:
+class COTE(object):
     
     def __init__(self, outpt_directory, input_shape, nb_classes, verbose=False, build=True):
         self.outpt_directory = outpt_directory
