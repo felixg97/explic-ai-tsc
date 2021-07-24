@@ -50,7 +50,6 @@ class ResNet(object):
 
 
     def build(self, input_shape, nb_classes):
-        ## model build
         """
         https://github.com/hfawaz/dl-4-tsc/blob/master/classifiers/resnet.py
         """

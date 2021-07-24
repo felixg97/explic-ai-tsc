@@ -4,6 +4,11 @@ classifier.py
 Arbitrary Classifer proposed by Mustermann et al. 1999
 
 bibtex:
+
+This Script has been provided by:
+https://url.com
+
+It is partially rewritten.
 """
 import tensorflow.keras as keras
 import tensorflow as tf
