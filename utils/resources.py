@@ -31,6 +31,7 @@ MY_DATA_SETS = [
     'OSULeaf',
 ]
 
+## weitere optionen: ScreenType, UWaveGestureLibraryAll, Phoneme, Lightning2, CricketY, ElectricDevices, Adiac
 
 ######################## Classifier I use ########################
 MY_CLASSIFIERS = [

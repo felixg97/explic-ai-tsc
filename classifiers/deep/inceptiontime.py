@@ -31,7 +31,7 @@ import time
 from utils.utils import calculate_metrics, save_logs
 from utils.utils import save_test_duration
 
-class Classifer(object):
+class InceptionTime(object):
     
     def __init__(self, output_directory, input_shape, nb_classes, verbose=False, 
         build=True, batch_size=64, lr=.001, nb_filters=32, use_residual=True,
