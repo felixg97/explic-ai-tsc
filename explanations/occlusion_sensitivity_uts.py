@@ -39,18 +39,26 @@ class OcclusionSensitivityUTS:
             np.array: 2d array: ()
         """
 
+        if len(timeseries_instance) % patch_size != 0:
+            raise Exception('The patch size does not divide the time series shape')
+
         sensitivity_map = np.zeros(
             math.ceil(len(timeseries_instance) / patch_size)
         )
+
+        # print(timeseries_instance)
 
         perturbed_timeseries = [ 
             self.apply_perturbation(timeseries_instance.copy(), end_idx, (end_idx + patch_size))
             for start_idx, end_idx in enumerate(range(0, len(timeseries_instance), patch_size))
         ]
 
-        indices = range(len(timeseries_instance / patch_size))
+        # print(perturbed_timeseries)
 
-        predictions = model.predict(np.array(perturbed_timeseries), batch_size=self.batch_size)
+        indices = [*range(len(timeseries_instance / patch_size))]
+
+        # predictions = model.predict(np.array(perturbed_timeseries), batch_size=self.batch_size)
+        predictions = []
 
         target_class_predictions = [
             prediction[true_class] for prediction in predictions
@@ -113,8 +121,8 @@ class OcclusionSensitivityUTS:
 
 
 
-exlpainer = OcclusionSensitivityUTS()
+# exlpainer = OcclusionSensitivityUTS()
 
-arr = np.array(range(20))
+# arr = np.array(range(20))
 
-exlpainer.explain_instance(arr, None, None, 2)
+# exlpainer.explain_instance(arr, None, None, 2)

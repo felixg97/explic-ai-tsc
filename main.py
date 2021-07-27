@@ -128,25 +128,25 @@ def create_classifier(classifier_name, input_shape, nb_classes, output_directory
         from classifiers import resnet
         return resnet.ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
     elif classifier_name == 'mlp':
-        from classifiers import ResNet
-        return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        from classifiers import MLP
+        return MLP(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
     elif classifier_name == 'inceptiontime':
-        from classifiers import ResNet
-        return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        from classifiers import InceptionTime
+        return InceptionTime(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
     elif classifier_name == 'fcn':
         from classifiers import FCN
-        return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        return FCN(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
     ## Ensemble
-    elif classifier_name == 'cote':
-        from classifiers import ResNet
-        return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
-    elif classifier_name == 'hivecote':
-        from classifiers import ResNet
-        return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+    # elif classifier_name == 'cote':
+    #     from classifiers import COTE
+    #     return COTE(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+    # elif classifier_name == 'hivecote':
+    #     from classifiers import HIVECOTE
+    #     return HIVECOTE(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
     ## Linear
-    elif classifier_name == 'rocket':
-        from classifiers import ResNet
-        return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+    # elif classifier_name == 'rocket':
+    #     from classifiers import ResNet
+    #     return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
 
 def run_complete(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
     pass
@@ -187,7 +187,6 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
 def run_explanations(classifiers, iterations, datasets, explanations, verbose=False, load=False):
 
     for classifier_name in classifiers:
-        pass
 
 
 def run_evaluations(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
