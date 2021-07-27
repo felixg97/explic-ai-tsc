@@ -96,7 +96,7 @@ def determine_configurations(sys_argv):
     return verbose, load
 
 
-def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name):
+def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=False, load_weights=False):
     x_train, y_train, x_test, y_test = dataset_dict[dataset_name]
 
     nb_classes = len(np.unique(np.concatenate((y_train, y_test), axis=0)))
@@ -151,39 +151,46 @@ def create_classifier(classifier_name, input_shape, nb_classes, output_directory
 def run_complete(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
     pass
 
-def run_classifiers(root_dir, classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
+def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, load=False):
 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
 
     print(dataset_dict.keys())
 
     for classifier_name in classifiers:
-        print('Classifier:\t', classifier_name)
+        # print('Classifier:\t', classifier_name)
 
-        for iteration in range(iterations):
-            print('Iteration:\t', iteration)
+        for iteration in [*range(iterations)]:
+            # print('Iteration:\t', iteration)
 
-            trr = ''
-            if iteration != 0:
-                trr = '_itr_' + str(iter)
+            trr = '_itr_' + str(iteration)
 
-            output_directory = root_dir + '/results/' + classifier_name + '/' + 'UCRArchive_2018' + trr + '/'
+            toutput_directory = root_dir + '/results/' + classifier_name + '/' + 'UCRArchive_2018' + trr + '/'
+
+            # print(output_directory)
 
             for dataset_name in datasets:
-                print('Data set:\t', dataset_name)
+                # print('Data set:\t', dataset_name)
 
-                output_directory = output_directory + dataset_name + '/'
+                output_directory = toutput_directory + dataset_name + '/'
+
+                print(output_directory)
 
                 create_directory(output_directory)
 
-                fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name)
+                continue
+
+                fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=verbose, load=load)
 
                 print('DONE')
                 create_directory(output_directory + '/DONE')
 
 
-def run_explanations(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
-    pass
+def run_explanations(classifiers, iterations, datasets, explanations, verbose=False, load=False):
+
+    for classifier_name in classifiers:
+        pass
+
 
 def run_evaluations(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
     pass
@@ -192,10 +199,10 @@ def run_evaluations(classifiers, iterations, datasets, explanations, evaluations
 ##################################### MAIN #####################################
 
 ## For Notebook
-# root_directory = 'C:/git/explic-ai-tsc'
+root_directory = 'C:/git/explic-ai-tsc'
 
 ## For PC
-root_directory = 'D:/git/explic-ai-tsc'
+# root_directory = 'D:/git/explic-ai-tsc'
 
 sys_argv = sys.argv[1:]
 
@@ -227,9 +234,9 @@ if command == 'help':
 if command == 'run_complete':
     run_complete(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load)
 elif command == 'run_classifier':
-    run_classifiers(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load)
+    run_classifiers(root_directory, classifiers, iterations, datasets, verbose=verbose, load=load)
 elif command == 'run_explanations':
-    run_explanations(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load)
+    run_explanations(root_directory, classifiers, iterations, datasets, explanations, verbose=verbose, load=load)
 elif command == 'run_evaluation':
     run_evaluations(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load)
 
