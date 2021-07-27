@@ -221,7 +221,7 @@ class ResNet:
     def __init__(self, output_directory, input_shape, nb_classes, verbose=False, build=True, load_weights=False):
         self.model_name = 'resnet'
         self.output_directory = output_directory
-        
+
         if build == True:
             self.model = self.build_model(input_shape, nb_classes)
             if (verbose == True):

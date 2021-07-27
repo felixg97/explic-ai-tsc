@@ -34,7 +34,7 @@ from utils.utils import save_test_duration
 class InceptionTime(object):
     
     def __init__(self, output_directory, input_shape, nb_classes, verbose=False, build=True, batch_size=64, lr=0.001,
-                 nb_filters=32, use_residual=True, use_bottleneck=True, depth=6, kernel_size=41, nb_epochs=1500):
+                 nb_filters=32, use_residual=True, use_bottleneck=True, depth=6, kernel_size=41, nb_epochs=1500, load_weights=False):
 
         self.output_directory = output_directory
 

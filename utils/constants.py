@@ -173,7 +173,7 @@ DATASETS_NAMES = [
 CLASSIFIERS = [
     'MLP', # easy TODO: (1)
     'ResNet', # easy TODO: (2)
-    #'FCN', # easy TODO: i guess (3.2)
+    'FCN', # easy TODO: i guess (3.2)
     'InceptionTime' # easy TODO: i guess (3.1)
     #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
 ]
