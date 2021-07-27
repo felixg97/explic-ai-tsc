@@ -178,8 +178,6 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
 
                 create_directory(output_directory)
 
-                continue
-
                 fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=verbose, load=load)
 
                 print('DONE')
