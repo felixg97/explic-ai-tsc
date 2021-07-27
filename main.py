@@ -123,7 +123,7 @@ def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name
 
 def create_classifier(classifier_name, input_shape, nb_classes, output_directory, verbose=False, load_weights=False):
     ## Deep
-    print(classifier_name)
+    classifier_name = classifier_name.lower()
     if classifier_name == 'resnet':
         from classifiers import resnet
         return resnet.ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
@@ -192,10 +192,10 @@ def run_evaluations(classifiers, iterations, datasets, explanations, evaluations
 ##################################### MAIN #####################################
 
 ## For Notebook
-root_directory = 'C:/git/explic-ai-tsc'
+# root_directory = 'C:/git/explic-ai-tsc'
 
 ## For PC
-# root_directory = 'D:/git/explic-ai-tsc'
+root_directory = 'D:/git/explic-ai-tsc'
 
 sys_argv = sys.argv[1:]
 
