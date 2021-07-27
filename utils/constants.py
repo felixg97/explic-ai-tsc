@@ -55,7 +55,7 @@ UNIVARIATE_DATASET_NAMES_2018 = ['ACSF1', 'Adiac', 'AllGestureWiimoteX', 'AllGes
                                 'Wafer', 'Wine', 'WordSynonyms', 'Worms', 'WormsTwoClass', 'Yoga']
 
 
-ITERATIONS = 5  # nb of random runs for random initializations
+ITERATIONS = 3 # nb of random runs for random initializations
 
 ARCHIVE_NAMES = ['UCRArchive_2018']
 
@@ -107,3 +107,124 @@ dataset_types = {'ElectricDevices': 'DEVICE', 'FordB': 'SENSOR',
 themes_colors = {'IMAGE': 'red', 'SENSOR': 'blue', 'ECG': 'green',
                 'SIMULATED': 'yellow', 'SPECTRO': 'orange',
                 'MOTION': 'purple', 'DEVICE': 'gray'}
+
+
+################################### ArgParse ###################################
+
+HELP_INFO = """
+commands: help, run_complete, run_classifier, run_explanations, run_evaluation
+
+argugments:
+-data, -d {dataset: default=all, optional}
+-classifier, -c {classifier: default=all, optional}
+-iterations, -i {iterations: default=?, optional}
+-explanation, -ex {explanation: default=all, optional}
+-evaluation, -ev {evaluation: default=all, optional}
+-output_path, -o {output_path: string, optional}
+
+configurations:
+--verbose
+--load
+"""
+
+COMMANDS = ['help', 'run_complete', 'run_classifier', 'run_explanations', 'run_evaluation']
+
+ARGUMENTS = [
+    '-data', '-d', '-classifier', '-c', '-iterations', '-i', '-explanation', 
+    '-ex', '-evaluation', '-ev', '-output_path', '-o'
+]
+
+PARAMS = []
+
+CONFIGS = ['--verbose']
+
+################################### Data sets ##################################
+UNIVARIATE_DATASET_NAMES = [
+    '50words', 'Adiac', 'ArrowHead', 'Beef', 'BeetleFly', 'BirdChicken', 'Car', 'CBF',
+    'ChlorineConcentration', 'CinC_ECG_torso', 'Coffee',
+    'Computers', 'Cricket_X', 'Cricket_Y', 'Cricket_Z', 'DiatomSizeReduction',
+    'DistalPhalanxOutlineAgeGroup', 'DistalPhalanxOutlineCorrect', 'DistalPhalanxTW',
+    'Earthquakes', 'ECG200', 'ECG5000', 'ECGFiveDays', 'ElectricDevices', 'FaceAll', 'FaceFour',
+    'FacesUCR', 'FISH', 'FordA', 'FordB', 'Gun_Point', 'Ham', 'HandOutlines',
+    'Haptics', 'Herring', 'InlineSkate', 'InsectWingbeatSound', 'ItalyPowerDemand',
+    'LargeKitchenAppliances', 'Lighting2', 'Lighting7', 'MALLAT', 'Meat', 'MedicalImages',
+    'MiddlePhalanxOutlineAgeGroup', 'MiddlePhalanxOutlineCorrect', 'MiddlePhalanxTW',
+    'MoteStrain', 'NonInvasiveFatalECG_Thorax1', 'NonInvasiveFatalECG_Thorax2', 'OliveOil',
+    'OSULeaf', 'PhalangesOutlinesCorrect', 'Phoneme', 'Plane', 'ProximalPhalanxOutlineAgeGroup',
+    'ProximalPhalanxOutlineCorrect', 'ProximalPhalanxTW', 'RefrigerationDevices',
+    'ScreenType', 'ShapeletSim', 'ShapesAll', 'SmallKitchenAppliances', 'SonyAIBORobotSurface',
+    'SonyAIBORobotSurfaceII', 'StarLightCurves', 'Strawberry', 'SwedishLeaf', 'Symbols',
+    'synthetic_control', 'ToeSegmentation1', 'ToeSegmentation2', 'Trace', 'TwoLeadECG',
+    'Two_Patterns', 'UWaveGestureLibraryAll', 'uWaveGestureLibrary_X', 'uWaveGestureLibrary_Y',
+    'uWaveGestureLibrary_Z', 'wafer', 'Wine', 'WordsSynonyms', 'Worms', 'WormsTwoClass', 'yoga'
+]
+
+DATASETS_NAMES = [
+    'BeetleFly', 
+    'Earthquakes',
+    'ECG5000',
+    'ElectricDevices',
+    'OSULeaf'
+]
+
+## weitere optionen: ScreenType, UWaveGestureLibraryAll, Phoneme, Lightning2, CricketY, ElectricDevices, Adiac
+
+################################## Classifiers #################################
+CLASSIFIERS = [
+    'MLP', # easy TODO: (1)
+    'ResNet', # easy TODO: (2)
+    #'FCN', # easy TODO: i guess (3.2)
+    'InceptionTime' # easy TODO: i guess (3.1)
+    #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
+]
+
+
+################################## Explanations ################################
+EXPLANATIONS = [
+    'LIME',
+    'RISE',
+    'Anchor',
+    'Occlusion',
+    'Meaningful Perturbation'
+]
+
+
+################################## Evaluations #################################
+EVALUATIONS = [
+    'Sanity check', 
+    'Perturbation Analysis'
+]
+
+############ Data sets Jakob used ############
+DATA_SETS_JAKOB = [
+'Adiac',
+'Beef',
+'BeetleFly',
+'BirdChicken',
+'ChlorineConc',
+'Computers',
+'CricketY',
+'Crop',
+'Earthquakes',
+'ECG200',
+'ECG5000',
+'ElectricDevices',
+'Haptics',
+'Herring',
+'InlineSkate',
+'Lightning2',
+'Lightning7',
+'MidPhalOutAgGrp',
+'MidPhalTW',
+'MoteStrain',
+'OliveOil',
+'OSULeaf',
+'Phoneme',
+'ScreenType',
+'ShapesAll',
+'SmallKitchenApp',
+'UWaveGestLibAll',
+'Wine',
+'WordSynonyms',
+'Worms'
+]

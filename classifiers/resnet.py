@@ -219,7 +219,9 @@ from utils.utils import save_test_duration
 class ResNet:
 
     def __init__(self, output_directory, input_shape, nb_classes, verbose=False, build=True, load_weights=False):
+        self.model_name = 'resnet'
         self.output_directory = output_directory
+        
         if build == True:
             self.model = self.build_model(input_shape, nb_classes)
             if (verbose == True):
@@ -348,7 +350,7 @@ class ResNet:
         # convert the predicted from binary to integer
         y_pred = np.argmax(y_pred, axis=1)
 
-        df_metrics = save_logs(self.output_directory, hist, y_pred, y_true, duration)
+        df_metrics = save_logs(self.output_directory, hist, y_pred, y_true, duration, model_name=self.model_name)
 
         keras.backend.clear_session()
 

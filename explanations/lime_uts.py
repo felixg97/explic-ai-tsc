@@ -135,7 +135,7 @@ class UnivariateTimeSeriesDomainMapper():
         """
 
 
-class LimeUnivariateTimeSeriesExplainer(object):
+class LimeUTS(object):
     """Explains predictions on Time Series data."""
 
 

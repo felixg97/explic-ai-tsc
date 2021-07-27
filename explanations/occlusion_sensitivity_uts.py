@@ -10,7 +10,7 @@ This Explanation is just for univariate Time Series Explanations
 import math
 import numpy as np
 
-class OcclusionSensitivityUTS(object):        
+class OcclusionSensitivityUTS:        
 
     """
     Performs occlusion sensitivity on univariate time series

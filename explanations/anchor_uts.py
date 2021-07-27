@@ -6,7 +6,7 @@ anchor.py
 Inspired by https://github.com/marcotcr/anchor
 """
 
-class Anchor(object):        
+class AnchorUTS(object):        
 
     """
     Performs Anchor on univariate time series
