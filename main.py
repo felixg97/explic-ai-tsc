@@ -116,7 +116,7 @@ def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name
         x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 1))
 
     input_shape = x_train.shape[1:]
-    classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory)
+    classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, verbose=verbose, load_weights=load_weights)
 
     classifier.fit(x_train, y_train, x_test, y_test, y_true)
 
@@ -178,7 +178,7 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
 
                 create_directory(output_directory)
 
-                fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=verbose, load=load)
+                fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=verbose, load_weights=load)
 
                 print('DONE')
                 create_directory(output_directory + '/DONE')
