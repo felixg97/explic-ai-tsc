@@ -4,8 +4,10 @@ import sys
 import sklearn
 import utils
 
-from utils.constants import ARCHIVE_NAMES
-from utils.constants import CLASSIFIERS
+
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 ################################### METHODS ##################################
 
@@ -41,14 +43,14 @@ sys_args_1 = ''
 sys_args_2 = ''
 
 ## sys.argv management
-if sys.argv[1] == 'run':
+"""if sys.argv[1] == 'run':
     pass
 elif sys.argv[1] == '':
     pass
 elif sys.argv[1] == '':
     pass
 elif sys.argv[1] == '':
-    pass
+    pass"""
 
 
 
@@ -66,5 +68,30 @@ elif sys.argv[1] == '':
 ##### 4) Time Series Relevance: for each Feature Perturbator FP := {fp1, ..., fpm}
 ##### 4.1) For each Time Series Td := {t1, ..., tj} Relevance Vector r(tj, mn, p1)
 
+from utils.utils import read_all_datasets
+from classifiers.resnet import ResNet
 
-print('Hello my man')
+dataset_dict = read_all_datasets('C:/git/explic-ai-tsc', 'UCRArchive_2018')
+
+curr_dataset = 'BeetleFly'
+
+x_train, y_train, x_test, y_test = dataset_dict[curr_dataset]
+
+nb_classes = len(np.unique(np.concatenate((y_train, y_test), axis=0)))
+
+# transform the labels from integers to one hot vectors
+enc = sklearn.preprocessing.OneHotEncoder(categories='auto')
+enc.fit(np.concatenate((y_train, y_test), axis=0).reshape(-1, 1))
+y_train = enc.transform(y_train.reshape(-1, 1)).toarray()
+y_test = enc.transform(y_test.reshape(-1, 1)).toarray()
+
+# save orignal y because later we will use binary
+y_true = np.argmax(y_test, axis=1)
+
+results_dir = os.path.abspath('C:/git/explic-ai-tsc/output/results')
+
+
+input_shape = x_train.shape[1:]
+nb_classes = len(np.unique(np.concatenate((y_train, y_test), axis=0)))
+
+model = ResNet(results_dir, input_shape, nb_classes)

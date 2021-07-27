@@ -1,19 +1,14 @@
 import numpy as np
 import pandas as pd
-import matplotlib
+import matplotlib.pyplot as plt
 import os
 import operator
-import utils
 
-from utils.constants import UNIVARIATE_DATASET_NAMES as UNIVARIATE_DATASET_NAMES_2015
-from utils.constants import UNIVARIATE_DATASET_NAMES_2018 as UNIVARIATE_DATASET_NAMES_2018
-from utils.constants import ARCHIVE_NAMES as ARCHIVE_NAME
-from utils.constants import ITERATIONS
+from utils.resources import MY_DATA_SETS as DATA_SET_NAMES_2018
 
-from utils.resources import MY_DATA_SETS as DATA_SETS
-from utils.resources import MY_CLASSIFIERS as CLASSIFIERS
-from utils.resources import MY_EXPLANATIONS as EXPLANATIONS
-from utils.resources import MY_EVALUATIONS as EVALUATIONS
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 
 ## Reads UCR File
 def readucr(filename):
@@ -45,10 +40,6 @@ def create_path(root_dir, classifier_name, archive_name):
         os.makedirs(output_directory)
         return output_directory
 
-
-## Saves model logs TODO:
-def save_logs():
-    return None
 
 ## Save model test duration TODO:
 def save_test_duration(output_path, duration):
@@ -104,8 +95,10 @@ def read_all_datasets(root_dir, archive_name, split_val=False):
     dataset_names_to_sort = []
 
     if archive_name == 'UCRArchive_2018':
-        for dataset_name in DATASET_NAMES_2018:
-            root_dir_dataset = cur_root_dir + '/archives/' + archive_name + '/' + dataset_name + '/'
+        for dataset_name in DATA_SET_NAMES_2018:
+            root_dir_dataset = cur_root_dir + '/data/' + archive_name + '/' + dataset_name
+
+            # print(root_dir_dataset)
 
             df_train = pd.read_csv(root_dir_dataset + '/' + dataset_name + '_TRAIN.tsv', sep='\t', header=None)
 
@@ -155,5 +148,65 @@ def read_all_datasets(root_dir, archive_name, split_val=False):
     return datasets_dict
 
 ## Calculate metrics: precision, accuracy, recall + report (duration) TODO:
-def calculate_metrics(outpt_directory, hist, duration, y_pred=None, y_true=None):
-    return None
+def calculate_metrics(y_true, y_pred, duration, y_true_val=None, y_pred_val=None):
+    res = pd.DataFrame(data=np.zeros((1, 4), dtype=np.float), index=[0],
+                    columns=['precision', 'accuracy', 'recall', 'duration'])
+    res['precision'] = precision_score(y_true, y_pred, average='macro')
+    res['accuracy'] = accuracy_score(y_true, y_pred)
+
+    if not y_true_val is None:
+        # this is useful when transfer learning is used with cross validation
+        res['accuracy_val'] = accuracy_score(y_true_val, y_pred_val)
+
+    res['recall'] = recall_score(y_true, y_pred, average='macro')
+    res['duration'] = duration
+    return res
+
+## Saves model logs TODO:
+def save_logs(output_directory, hist, y_pred, y_true, duration, lr=True, 
+        y_true_val=None, y_pred_val=None):
+    
+    hist_df = pd.DataFrame(hist.history)
+    hist_df.to_csv(output_directory + 'history.csv', index=False)
+
+    df_metrics = calculate_metrics(y_true, y_pred, duration, y_true_val, y_pred_val)
+    df_metrics.to_csv(output_directory + 'df_metrics.csv', index=False)
+
+    index_best_model = hist_df['loss'].idxmin()
+    row_best_model = hist_df.loc[index_best_model]
+
+    df_best_model = pd.DataFrame(data=np.zeros((1, 6), dtype=np.float), index=[0],
+                                columns=['best_model_train_loss', 'best_model_val_loss', 'best_model_train_acc',
+                                        'best_model_val_acc', 'best_model_learning_rate', 'best_model_nb_epoch'])
+
+    df_best_model['best_model_train_loss'] = row_best_model['loss']
+    df_best_model['best_model_val_loss'] = row_best_model['val_loss']
+    df_best_model['best_model_train_acc'] = row_best_model['accuracy']
+    df_best_model['best_model_val_acc'] = row_best_model['val_accuracy']
+    if lr == True:
+        df_best_model['best_model_learning_rate'] = row_best_model['lr']
+    df_best_model['best_model_nb_epoch'] = index_best_model
+
+    df_best_model.to_csv(output_directory + 'df_best_model.csv', index=False)
+
+    # for FCN there is no hyperparameters fine tuning - everything is static in code
+
+    # plot losses
+    plot_epochs_metric(hist, output_directory + 'epochs_loss.png')
+
+    return df_metrics
+
+
+def plot_epochs_metric(hist, file_name, metric='loss'):
+    plt.figure()
+    plt.plot(hist.history[metric])
+    plt.plot(hist.history['val_' + metric])
+    plt.title('model ' + metric)
+    plt.ylabel(metric, fontsize='large')
+    plt.xlabel('epoch', fontsize='large')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.savefig(file_name, bbox_inches='tight')
+    plt.close()
+
+
+

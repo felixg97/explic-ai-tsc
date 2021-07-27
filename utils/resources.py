@@ -24,7 +24,7 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 MY_DATA_SETS = [
-    'BeefFly', 
+    'BeetleFly', 
     'Earthquakes',
     'ECG5000',
     'ElectricDevices',
