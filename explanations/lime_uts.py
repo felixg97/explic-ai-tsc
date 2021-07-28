@@ -85,27 +85,14 @@ LIME_TIMESERIES
 # least squares (K-LASSO algorithm)
 #
 #
-################################ Explained other way ###########################
-#
-# 1) Generate N perturbed samples of the interpretable version of the instance to
-#    explain y´. 
-#    Let {z[i]´ element of X´ | i=1, ..., N} be the set of observations
-#
-# 2) Recover the observed observations in the original feature space by means of 
-#    the mapping of the mapping function. 
-#    Let {z[i] be equivalent to h^y(z[i]´) element of X | i=1, ..., N} be the set
-#    in the original representation
-# 
-#
-#
 ##################################### Specifics #################################
 #
 # e(x)=argmin [g element G](L(f, g, pi[x]) + O(g))
 #
 # Where:
 #  L: L(f, g, pi[x])=Sum[z, z´ element of Z]( pi[x](z) * (f(z) - g(z))^2 ) (locally weighted square loss)
-#  G: ?
-#  O: 
+#  G: 
+#  O: Complexity measure
 #
 #
 # pi[x](z)=exp(-D(x, z)^2 / sig^2)
@@ -114,12 +101,14 @@ LIME_TIMESERIES
 #  (1) D: L2 distance  
 #  (2) D: DTW distance
 
+import math
 
 from functools import partial
 from os import terminal_size
 import numpy as np
 import scipy as sp
 from scipy.sparse.construct import rand
+import sklearn
 from sklearn.linear_model import Ridge 
 from sklearn.linear_model import lars_path
 from sklearn.utils import check_random_state
@@ -127,23 +116,31 @@ from sklearn.utils import check_random_state
 from lime import lime_base
 from lime import explanation
 
+from utils.perturbations import UTSPerturbations
 
-class UnivariateTimeSeriesDomainMapper():
-    def __init__(self, signal_name, num_slices):
-        """Init function
-        
+class UTSDomainMapper(explanation.DomainMapper):
+    def __init__(self, patch_size):
+        """Init function.
+        Args:
+            signal_names: list of strings, names of signals
         """
+        self.patch_size = patch_size
+        
+    def map_exp_ids(self, exp, **kwargs):
+        return exp
 
 
 class LimeUTS(object):
     """Explains predictions on Time Series data."""
 
 
-    def __init__(self, kernel_width=.25, 
+    def __init__(self, 
+        kernel_width=25, 
         kernel=None, 
         verbose=False, 
+        random_state=None,
         feature_selection='auto',
-        random_state=None):
+        signal_names=["not specified"]):
         """Init function
         
         Args:
@@ -171,43 +168,152 @@ class LimeUTS(object):
 
         self.random_state = check_random_state(random_state)    
         self.feature_selection = feature_selection
-        self.base = lime_base.LimeBase(kernel_fn, verbose=verbose)
+        self.base = lime_base.LimeBase(kernel_fn, verbose=verbose, random_state=self.random_state)
 
 
     def explain_instance(self, 
-        timeseries_instance, 
-        classifier_fn, 
-        labels=(1,),
-        top_labels=None, 
-        num_features=100, 
-        num_samples=1000, 
-        batch_size=10,
-        segmentation_fn=None, 
+        timeseries_instance,
+        true_class=1,
+        patch_size=1,
+        labels=(1,), # TODO: testen ob das damit geht -> true class
+        top_labels=None,
+        model=None, 
+        num_features=10, 
+        num_samples=500, 
         random_seed=None, 
-        progress_bar=True,
-        perturbation_fn='occlusion',
-        distance_fn='L2'):
+        perturbation='occlusion',
+        distance_metric='eucledian',
+        model_regressor=None,
+        ):
         """Generates explanations for a prediction.
 
         Generates neighborhood by randomly perturbing features from the instance.
         It then learns locally weighted linear models on this neighborhood data
         to explain each of the class.
 
+        Args:
+            timeseries_instance: Time series to be explained.
+            true_class: Class to be explained
+            model: Classifier 
         """
-        
-        if perturbation_fn == 'occlusion':
-            pass
-        elif perturbation_fn == 'mean':
-            pass
-        
-        if 
+        if not model:
+            raise Exception('No model given.')
 
-        pass
+        permutations, predictions, distances = self._data_labels_distance(
+            timeseries_instance, model, num_samples, patch_size=patch_size, 
+            perturbation=perturbation, distance_metric=distance_metric)
 
-    def data_labels(self, 
-        timeseries, 
+        # if self.class_names is None:
+        #     self.
+        class_names = [str(x) for x in range(predictions[0].shape[0])]
+
+        domain_mapper = UTSDomainMapper(patch_size)
+
+        ret_exp = explanation.Explanation(domain_mapper=domain_mapper, 
+            class_names=class_names)
+
+        ret_exp.predict_proba = predictions[0]
+
+        # print(top_labels)
+
+        if top_labels:
+            labels = np.argsort(predictions[0])[-top_labels[0]:]
+            ret_exp.top_labels = list(predictions)
+            ret_exp.top_labels.reverse()
+        for label in labels:
+            (ret_exp.intercept[int(label)],
+                ret_exp.local_exp[int(label)],
+                ret_exp.score,
+                ret_exp.local_pred) = self.base.explain_instance_with_data(
+                permutations, predictions, distances, label, num_features,
+                model_regressor=model_regressor, feature_selection=self.feature_selection)
+        return ret_exp
+
+
+    def _data_labels_distance(
+        self, 
+        timeseries_instance,
+        model,
+        num_samples,
+        patch_size=1,
+        perturbation='occlusion',
+        distance_metric='eucledian'
         ):
         """Generates time series and predictions in the neighborhood of this time series.
         """
         pass
+
+        ### distance measures
+
+        ## cosine 
+        def distance_cosine(x):
+            return sklearn.metrics.pairwise.pairwise_distances(
+                x, x[0].reshape([1, -1]), metric='cosine').ravel() * 100
+
+        ## eucedian
+        def distance_eucledian(x):
+            return sklearn.metrics.pairwise.pairwise_distances(
+                x, x[0].reshape([1, -1]), metric='eucledian').ravel() * 100
+
+        num_channels = 1 # cause univariate
+        len_ts = len(timeseries_instance)
+        num_slices = math.ceil(len_ts / patch_size)
+        values_per_slice = patch_size
+
+        deact_per_sample = np.random.randint(1, num_slices + 1, num_samples - 1)
+        perturbation_matrix = np.ones((num_samples, num_channels, num_slices))
+        features_range = range(num_slices)
+        original_data = [timeseries_instance.copy()]
+
+        perturbator = UTSPerturbations()
+
+        for i, num_inactive in enumerate(deact_per_sample, start=1):
+            # print(f'Sample {i}, inactivating {num_inactive}')
+
+            # choose random slices to perturb
+            inactive_idxs = np.random.choice(features_range, num_inactive,
+                replace=False)
+
+            num_channels_to_perturb = np.random.randint(1, num_channels+1)
+
+            channels_to_perturb = np.random.choice(range(num_channels),
+                num_channels_to_perturb, replace=False)
+
+            # print(f'Sample {i}, perturbung {channels_to_perturb}')
+
+            for chan in channels_to_perturb:
+                perturbation_matrix[i, chan, inactive_idxs] = 0
+
+            tmp_series = timeseries_instance.copy()
+
+            for idx in inactive_idxs:
+                start_idx = idx * values_per_slice
+                end_idx = start_idx + values_per_slice
+                end_idx = min(end_idx, len_ts)
+
+                perturbator.apply_perturbation(tmp_series, start_idx, end_idx, 
+                    perturbation=perturbation)
+            original_data.append(tmp_series)
+
+        predictions = model.predict_input(np.array(original_data))
+
+        # print()
+        # print()
+        # print('######## Predictions: ########')
+        # print(predictions.shape)
+        # print(predictions)
+        # print()
+        # print()
+
+        perturbation_matrix = perturbation_matrix.reshape((num_samples, num_channels * num_slices))
+
+        distances = None
+        if distance_metric == 'cosine':
+            distances = distance_cosine(perturbation_matrix)
+        elif distance_metric == 'eucledian':
+            distances = distance_cosine(perturbation_matrix)
+
+        return perturbation_matrix, predictions, distances
+
+
 

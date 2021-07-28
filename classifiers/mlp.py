@@ -252,3 +252,10 @@ class MLP:
             return df_metrics
         else:
             return y_pred
+
+
+    def predict_input(self, timeseries_instance):
+        model_path = self.output_directory + 'best_model.hdf5'
+        model = keras.models.load_model(model_path)
+        y_pred = model.predict(timeseries_instance)
+        return y_pred
