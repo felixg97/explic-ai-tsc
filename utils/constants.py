@@ -55,7 +55,7 @@ UNIVARIATE_DATASET_NAMES_2018 = ['ACSF1', 'Adiac', 'AllGestureWiimoteX', 'AllGes
                                 'Wafer', 'Wine', 'WordSynonyms', 'Worms', 'WormsTwoClass', 'Yoga']
 
 
-ITERATIONS = 3 # nb of random runs for random initializations
+ITERATIONS = 2 # nb of random runs for random initializations
 
 ARCHIVE_NAMES = ['UCRArchive_2018']
 
@@ -171,9 +171,9 @@ DATASETS_NAMES = [
 
 ################################## Classifiers #################################
 CLASSIFIERS = [
-    'MLP', # easy TODO: (1)
+    # 'MLP', # easy TODO: (1)
     'ResNet', # easy TODO: (2)
-    'FCN', # easy TODO: i guess (3.2)
+    # 'FCN', # easy TODO: i guess (3.2)
     'InceptionTime' # easy TODO: i guess (3.1)
     #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
 ]
