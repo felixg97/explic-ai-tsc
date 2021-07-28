@@ -197,10 +197,10 @@ def run_evaluations(classifiers, iterations, datasets, explanations, evaluations
 ##################################### MAIN #####################################
 
 ## For Notebook
-root_directory = 'C:/git/explic-ai-tsc'
+# root_directory = 'C:/git/explic-ai-tsc'
 
 ## For PC
-# root_directory = 'D:/git/explic-ai-tsc'
+root_directory = 'D:/git/explic-ai-tsc'
 
 sys_argv = sys.argv[1:]
 
