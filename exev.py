@@ -16,6 +16,8 @@ from explanations import AnchorUTS
 from lime import explanation
 from lime import lime_base
 
+from evaluations import PerturbationAnalysis
+
 ################################### Config #####################################
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -74,6 +76,14 @@ x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(x
 print('Dataset shape')
 print(x_train.shape)
 print()
+print('y_true')
+print(y_true.shape)
+# print(y_true)
+print('y_train')
+print(y_train.shape)
+print('y_test')
+print(y_test.shape)
+# print(y_test)
 
 timeseries_instance = x_test[0]
 
@@ -82,11 +92,18 @@ from classifiers import MLP
 output_directory_model = 'C:/git/explic-ai-tsc/results/MLP/UCRArchive_2018_itr_0/ECG5000/'
 model = MLP(output_directory_model, input_shape, nb_classes, verbose=True, build=False)
 
+## Load model base accuracy (test accuracy)
+output_directory_model_results = 'C:/git/explic-ai-tsc/results/MLP/UCRArchive_2018_itr_0/ECG5000/_df_metrics.csv'
+test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', skip_header=1)[1]
+
+print('test_accuracy')
+print(test_accuracy)
+print()
 
 ################################## Occlusion ###################################
-# explainer = OcclusionSensitivityUTS()
+explainer = OcclusionSensitivityUTS()
 
-# explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
+# relevance = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 #################################### LIME ######################################
 # explainer = LimeUTS()
 
@@ -107,14 +124,42 @@ model = MLP(output_directory_model, input_shape, nb_classes, verbose=True, build
 ########################### Meaningful Perturbation ############################
 # explainer = MeaningfulPerturbationUTS()
 
-# print(model)
+# explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
+
+############################ Perturbation Analysis #############################
+evaluator = PerturbationAnalysis()
+
+print()
+print()
+
+evaluation = evaluator.evaluate__xai_method(
+    test_accuracy, x_test, y_true,
+    model, explainer, batch_size=3000,
+    verification_method='zero_tp'
+)
+
+# print()
+# print('Time series to explain')
+# print(timeseries_instance.shape)
+# print(timeseries_instance)
+
+
+# print()
+# print('Explained_ts')
+# print(explained_ts.shape)
+# print(explained_ts)
+
+print()
+print('Evaluation of explanation method per instance')
+# print(evaluation.shape)
+print(evaluation)
 
 # exp = explained_ts.as_list(label=1)
 # print(exp)
 
 print()
 print()
-print('Explanaaaaaaaaations')
-print(explained_ts.shape)
-print(explained_ts[0])
+# print('Explanaaaaaaaaations')
+# print(explained_ts.shape)
+# print(explained_ts[0])
 # print(timeseries_instance)

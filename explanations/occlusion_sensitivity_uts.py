@@ -22,12 +22,12 @@ class OcclusionSensitivityUTS:
         self.batch_size = batch_size
         self.perturbation = perturbation
 
-    
+    # TODO: integrieren in jeder explanation
     def explain_instance( 
         self, 
         timeseries_instance,
-        true_class=None,
-        model=None, 
+        true_class,
+        model,
         patch_size=1,
     ):
         """
@@ -42,82 +42,48 @@ class OcclusionSensitivityUTS:
             np.array: 2d array: ()
         """
 
-        if type(true_class) is not int:
-            raise Exception('True class label is not a type of integer')
+        # if type(true_class) is not int:
+            # raise Exception('True class label is not a type of integer')
         if len(timeseries_instance) % patch_size != 0:
             raise Exception('The patch size does not divide the time series shape')
 
-        print('CONFIGURATIONS')
-        print()
-        print('True class:\t', true_class)
-        print('Model:\t', model)
-        print('Patch size:\t', patch_size)
-        print()
-
-        # print()
-        # print()
-        # print('######## Time series instance: ########')
-        # print(timeseries_instance.shape)
-        # print(timeseries_instance)
-        # print()
-        # print()
-
         perturbator = UTSPerturbations()
 
-        perturbed_timeseries = [ 
+        # print('timeseries_instance')
+        # print(timeseries_instance)
+        # print(timeseries_instance.shape)
+
+        # generate perturbed time series
+        perturbed_timeseries = np.array([ 
             perturbator.apply_perturbation(timeseries_instance.copy(), end_idx, (end_idx + patch_size))
             for start_idx, end_idx in enumerate(range(0, len(timeseries_instance), patch_size))
-        ]
+        ])
 
-        # print()
-        # print()
-        # print('######## Perturbed Time series instance: ########')
-        # print(len(perturbed_timeseries))
-        # print(perturbed_timeseries[:2])
-        # print('CHECK - Funktioniert')
-        # print()
-        # print()
+        # print('perturbed_timeseries')
+        # print(perturbed_timeseries.shape)
+        # print(perturbed_timeseries[0])
+        # predict perturbed time series
+        predictions = model.predict_input(perturbed_timeseries)
 
-        predictions = model.predict_input(np.array(perturbed_timeseries))
-
-        # print()
-        # print()
-        # print('######## Predictions: ########')
-        # print(predictions.shape)
-        # print(predictions)
-        # print('CHECK - Funktioniert')
-        # print()
-        # print()
-
-
+        # extract predictions of time series based on true class
         target_class_predictions = [
-            prediction[true_class - 1] for prediction in predictions # TODO: true_class schlauer lösen
+            prediction[true_class - 1] for prediction in predictions
         ]
 
-        # print()
-        # print()
-        # print('######## Target class predictions: ########')
-        # print(len(target_class_predictions))
-        # print(target_class_predictions)
-        # print()
-        # print()
-
+        # generate array with size of time series
         confidence_map = np.zeros(
             math.ceil(len(timeseries_instance))
         )
 
+        # assign every prediction to the right place/subsequence of the
+        # confidence map
         counter = 0
         for idx in range(len(confidence_map)):
             confidence_map[idx] = 1 - target_class_predictions[counter]
-            if idx % patch_size == 3:
+            if idx % patch_size == (patch_size - 1):
                 counter +=1
 
-        attibution_map = [list(i) for i in zip(timeseries_instance, confidence_map)]
+        # attribution_map = [list(i) for i in zip(timeseries_instance, confidence_map)]
 
-        # print()
-        # print('######## Attribution Map: ########')
-        # print(attibution_map)
-        # print()
-        # print()
-
-        return np.array(attribution_map)
+        # return np.array(attribution_map)
+        return np.array(confidence_map)
