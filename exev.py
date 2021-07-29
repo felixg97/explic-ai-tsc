@@ -60,10 +60,10 @@ def reshape_timeseries_instance(timeseries_instance):
 
 ################################ Load Data set #################################
 ## For Notebook
-root_directory = 'C:/git/explic-ai-tsc'
+# root_directory = 'C:/git/explic-ai-tsc'
 
 ## For PC
-# root_directory = 'D:/git/explic-ai-tsc'
+root_directory = 'D:/git/explic-ai-tsc'
 
 dataset_dict = read_all_datasets(root_directory, 'UCRArchive_2018')
 
@@ -89,11 +89,11 @@ timeseries_instance = x_test[0]
 
 ############################ Load Pretrained Model #############################
 from classifiers import MLP
-output_directory_model = 'C:/git/explic-ai-tsc/results/MLP/UCRArchive_2018_itr_0/ECG5000/'
+output_directory_model = root_directory + '/results/MLP/UCRArchive_2018_itr_0/ECG5000/'
 model = MLP(output_directory_model, input_shape, nb_classes, verbose=True, build=False)
 
 ## Load model base accuracy (test accuracy)
-output_directory_model_results = 'C:/git/explic-ai-tsc/results/MLP/UCRArchive_2018_itr_0/ECG5000/_df_metrics.csv'
+output_directory_model_results = root_directory + '/results/MLP/UCRArchive_2018_itr_0/ECG5000/_df_metrics.csv'
 test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', skip_header=1)[1]
 
 print('test_accuracy')
