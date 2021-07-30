@@ -63,7 +63,7 @@ class OcclusionSensitivityUTS:
         # print(perturbed_timeseries.shape)
         # print(perturbed_timeseries[0])
         # predict perturbed time series
-        predictions = model.predict_input(perturbed_timeseries)
+        predictions = model.predict_input(perturbed_timeseries, true_class)
 
         # extract predictions of time series based on true class
         target_class_predictions = [

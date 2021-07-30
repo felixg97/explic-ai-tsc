@@ -102,31 +102,44 @@ Perturbation Analyis proposed by schlegel2019
 #
 # Average changed accuracy
 import numpy as np
+import time
 
 from sklearn.metrics import accuracy_score
 
 from utils.perturbations import UTSPerturbations
 from utils.utils import calculate_metrics
 
-class PerturbationAnalysis:
+# NOTE: 
+# Perturbation Analysis currently does only return accuracies after perturbations
+# Average changes accuracies are not calculated here (not meant for here)
+#
+#
+class PerturbationAnalysisUTS:
 
     def __init__(self):
         self.perturbator = UTSPerturbations()
 
 
-    def evaluate__xai_method(self, 
-        test_accuracy, x_test, y_true, 
-        classification_model, xai_model, batch_size=0,
-        quality_metric='acc', threshold=90, verification_method='all'):
+    def evaluate__xai_method(self, test_accuracy, x_test, y_true, x_train, y_train, 
+        y_test, classification_model, xai_model, batch_size=0, quality_metric='acc', 
+        threshold=90, sequence_length=1, verification_method='all', database_name='not specified', 
+        classification_model_name='not specified', xai_method_name='not specified'):
 
         """Evaluate explanation method
         
         Hyperparameters: threshold e 
         """
         evaluation = { }
+
+        # measure time
+        start_time = time.time()
+
+        # time point evaluations
         eval_zero_tp = None
         eval_inverse_tp = None
         eval_mean_tp = None 
+
+        # sequence evaluation
         eval_swap_sq = None
         eval_zero_sq = None
         eval_inverse_sq = None
@@ -135,118 +148,107 @@ class PerturbationAnalysis:
         batch_size_in = 0
         if batch_size > 0:
             batch_size_in = batch_size
+        elif batch_size == 0:
+            batch_size_in = x_test.shape[0]
 
-        if verification_method == 'zero_tp':
-            eval_zero_tp = self._evaluate_tp(test_accuracy, x_test, y_true, classification_model, 
-                xai_model, quality_metric, threshold, batch_size_in, 'occlusion')
-        elif verification_method == 'inverse_tp':
-            eval_inverse_tp = self._evaluate_tp(test_accuracy, x_test, y_true, classification_model, 
-                xai_model, quality_metric, threshold, batch_size_in, 'occlusion')
-        elif verification_method == 'mean_tp':
-            eval_mean_tp = self._evaluate_tp(test_accuracy, x_test, y_true, classification_model, 
-                xai_model, quality_metric, threshold, batch_size_in, 'mean')
-        elif verification_method == 'swap_sq':
-            eval_swap_sq = None
-        elif verification_method == 'zero_sq':
-            eval_zero_sq = None
-        elif verification_method == 'inverse_sq':
-            eval_inverse_sq = None
-        elif verification_method == 'mean_sq':
-            eval_mean_sq = None
-        elif verification_method == 'all':
-            eval_zero_tp = None
-            eval_inverse_tp = None
-            eval_mean_tp = None 
-            eval_swap_sq = None
-            eval_zero_sq = None
-            eval_inverse_sq = None
-            eval_mean_sq = None
-            #end
-
-
-        # timeseries = np.array([timeseries_instance.copy()])
-
-        # print('Explanation')
-        # print(explanation.shape)
-
-        # Determine time points > threshold e  
-        # eth_percentile = np.percentile(explanation, threshold)
-
-        # Assign true values to indices overshooting the eth_percentile
-        # tps_with_threshold = np.array([
-            # i if (i >= eth_percentile) else 0
-        #     True if (i >= eth_percentile) else False
-        #     for i in explanation
-        # ])
-
-        # print()
-        # print('tps_with_threshold')
-        # print(tps_with_threshold.shape)
-        # print(tps_with_threshold)
-        
-        # print()
-        # for
-
-        # gen_arrs_w_idcs_dict = self._generate_arr_4_overshooting_tp(
-            # tps_with_threshold, timeseries)
-
-        
-
-        ############ 1
-        # eval_zero_tp = None
-
-        # perturbed_ts = np.array([
-            # self.perturbator.apply_perturbation(gen_arrs_w_idcs_dict[key][0], key, key)
-            # for key in gen_arrs_w_idcs_dict
-        # ])
-
-        # print('perturbed_ts')
-        # print(perturbed_ts.shape)
-
-        # prediction_ts = model.predict_input(timeseries)
-        # predictions_perturbed_ts = model.predict_input(perturbed_ts)
-
-        # print('prediction_true_ts')
-        # print(prediction_ts)
-        # print('predictions')
-        # print(predictions_perturbed_ts)
-
-        # acacc = self._calculate_qm_average_changed_acc(true_class_index ,prediction_ts, predictions_perturbed_ts)
-
-        # print(acacc)
-        ############ 2
-        # eval_inverse_tp = None
-
-        # perturbed_ts = [
-        #     self.perturbator.apply_perturbation(gen_arrs_w_idcs_dict[key][0], key, key)
-        #     for key in gen_arrs_w_idcs_dict
-        # ]
-
-        evaluation['eval_zero_tp'] = eval_zero_tp
-        evaluation['eval_inverse_tp'] = eval_inverse_tp
-        evaluation['eval_mean_tp'] = eval_mean_tp
-        evaluation['eval_swap_sq'] = eval_swap_sq
-        evaluation['eval_zero_sq'] = eval_zero_sq
-        evaluation['eval_inverse_sq'] = eval_inverse_sq
-        evaluation['eval_swap_sq'] = eval_swap_sq
-        return evaluation
-
-    def _evaluate_tp(self, test_accuracy, x_test, y_true, classification_model, 
-        xai_model, quality_metric, threshold, batch_size, perturbation_method):
+        evaluation['verification'] = verification_method
+        evaluation['quality_metric'] = quality_metric
+        evaluation['batch'] = batch_size_in
+        evaluation['threshold'] = threshold
+        evaluation['sequence_length'] = sequence_length
 
         _x_test = None
         _y_true = None
+        _x_train = None
+        _y_train = None
+        _y_test = None
         if batch_size != x_test.shape[0]:
             _x_test = np.array(x_test[:batch_size].copy())
             _y_true = np.array(y_true[:batch_size].copy())
+            _x_train = np.array(x_train[:batch_size].copy())
+            _y_train = np.array(y_train[:batch_size].copy())
+            _y_test = np.array(y_test[:batch_size].copy())
         else:
-            _x_test = np.array(x_test[:].copy())
-            _y_true = np.array(y_true[:batch_size].copy())
+            _x_test = np.array(x_test.copy())
+            _y_true = np.array(y_true.copy())
+            _x_train = np.array(x_train.copy())
+            _y_train = np.array(y_train.copy())
+            _y_test = np.array(y_test.copy())
+
+        if verification_method == 'zero_timepoint':
+            eval_zero_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion')
+        elif verification_method == 'inverse_timepoint':
+            eval_inverse_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'value_inversion')
+        elif verification_method == 'mean_timepoint':
+            eval_mean_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean')
+        elif verification_method == 'swap_sequence':
+            eval_swap_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'sequence_swap', sequence_length)
+        elif verification_method == 'zero_sequence':
+            eval_zero_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion', sequence_length)
+        elif verification_method == 'inverse_sequence':
+            pass
+            # INFO: Value inversion for sequences is currently paused, See perturbations.py
+            # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
+            #     threshold, batch_size_in, 'value_inversion', sequence_length)
+        elif verification_method == 'mean_sequence':
+            eval_mean_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean', sequence_length)
+        elif verification_method == 'all':
+            eval_zero_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion')
+            eval_inverse_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'value_inversion')
+            eval_mean_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean') 
+            eval_swap_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'sequence_swap', sequence_length)
+            eval_zero_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion', sequence_length)
+            # INFO: Value inversion for sequences is currently paused, See perturbations.py
+            # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
+            #     threshold, batch_size_in, 'value_inversion', sequence_length)
+            eval_mean_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean', sequence_length)
+            #end
+
+        evaluation['zero_timepoint'] = eval_zero_tp
+        evaluation['inverse_timepoint'] = eval_inverse_tp
+        evaluation['mean_timepoint'] = eval_mean_tp
+        evaluation['swap_sequence'] = eval_swap_sq
+        evaluation['zero_sequence'] = eval_zero_sq
+        evaluation['inverse_sequence'] = eval_inverse_sq
+        evaluation['swap_sequence'] = eval_swap_sq
+        evaluation['duration']=time.time()-start_time
+
+        return evaluation
+
+    def _evaluate_timepoint(self, test_accuracy, x_test, y_true, x_train, y_train, y_test,
+        classification_model, xai_model, quality_metric, threshold, batch_size, 
+        perturbation_method):
 
 
         # Calculate relevance of every time series # TOOD: integrate batch explaining
         relevances = np.array([
-            xai_model.explain_instance(x_test[idx], _y_true[idx], classification_model)
+            xai_model.explain_instance(x_test[idx], y_true[idx], classification_model) # TODO: perturbation für occlusion -> auf andere anpassen
             for idx in range(batch_size)
         ])
 
@@ -266,55 +268,102 @@ class PerturbationAnalysis:
         perturbed_ts = []
         for i in range(relevances.shape[0]):
             # i: index of time series to perturb
-            timeseries_to_perturb = _x_test[i].copy()
+            timeseries_to_perturb = x_test[i].copy()
+            reference_timeseries = x_test[i].copy()
             for j in range(len(reltps_over_threshoold[i])):
                 # j: index of time point to perturb
                 if reltps_over_threshoold[i][j]:
-                    self.perturbator.apply_perturbation(timeseries_to_perturb, j, 
-                        j, perturbation_method=perturbation_method)
+                    timeseries_to_perturb = self.perturbator.apply_perturbation(
+                        timeseries_to_perturb, j, j, perturbation=perturbation_method,
+                        reference_timeseries=reference_timeseries)
             perturbed_ts.append(timeseries_to_perturb)
-
         perturbed_ts = np.array(perturbed_ts)
 
+        # print()
+        # print(perturbation_method)
+        # print()
+        # print('perturbed_ts')
+        # print(perturbed_ts.shape)
+        # print(reltps_over_threshoold[0])
+        # print(perturbed_ts[0])
+
         # Predict perturbed time series
-        predictions_perturbed_ts = classification_model.predict_input(perturbed_ts)
-
-        # Calculate metrics for perturbed prediction
-        acc = self._calculate_accuracy_score(_y_true, predictions_perturbed_ts)
+        metrics = classification_model.predict(perturbed_ts, y_true, x_train, y_train, y_test)
         
-        # return abs(test_accuracy - acc)
-        return (acc - test_accuracy) # erstmal differenz raus
+        return metrics['accuracy'][0]
+        #end of _evaluate_timepoint
 
 
-    def _evaluate_sq(self, test_accuracy, x_test, y_true, classification_model, 
-        xai_model, quality_metric, threshold, batch_size, perturbation_method):
 
-        pass
+    def _evaluate_sequence(self, test_accuracy, x_test, y_true, x_train, y_train, y_test,
+        classification_model, xai_model, quality_metric, threshold, batch_size, 
+        perturbation_method, sequence_length):
 
+        # TODO: idee = sequence_length = stride width
+        if sequence_length == 1:
+            return 0
 
-    def _generate_arr_4_overshooting_tp(self, threshold_arr, timeseries_instance):
-        gen_dict = {}
-        for i in range(len(threshold_arr)):
-            if threshold_arr[i] == True:
-                gen_dict[i] = timeseries_instance.copy()
-        return gen_dict
+        # Calculate relevance of every time series # TOOD: integrate batch explaining
+        relevances = np.array([
+            xai_model.explain_instance(x_test[idx], y_true[idx], classification_model)
+            for idx in range(batch_size)
+        ])
 
+        # Determine time points > threshold e for every time series 
+        eth_percentile = np.array([
+            np.percentile(relevance, threshold) 
+            for relevance in relevances
+        ])
 
-    def _calculate_accuracy_score(self, y_true, y_pred):
-        _y_true = np.array(y_true)
-        _y_pred = np.array(y_pred)
+        # Assign true values to indices overshooting the eth_percentile
+        reltps_over_threshoold = np.array([
+            [True if (jdx >= eth_percentile[idx]) else False for jdx in relevances[idx]]
+            for idx in range(relevances.shape[0])
+        ])
 
-        print(_y_true)
-        print(_y_pred)
+        # Perturb time series based on their value > threshold e
+        perturbed_ts = []
+        true_count_ts = [] # factor that y_true[i] gets expanded by
+        for i in range(relevances.shape[0]):
+            # i: index of time series to perturb
+            # count true values of timeseries x_test[i]
+            true_count_ts.append(np.sum(reltps_over_threshoold[i]))
 
-        correctly_classified = 0
-        for predition_idx in range(_y_pred.shape[0]):
-            true_class = _y_true[predition_idx]
-            predicted_class = np.argmax(_y_pred[predition_idx])
-            if true_class == predicted_class: correctly_classified += 1
+            # copy time series to append in perturbed_ts without mutating it
+            timeseries_to_perturb = x_test[i].copy()
+            reference_timeseries = x_test[i].copy()
+            for j in range(len(reltps_over_threshoold[i])):
+                # j: index of array 
+                if reltps_over_threshoold[i][j]:    
+                    # timeseries for appending
+                    max_end = (reference_timeseries.shape[0]-1)
+                    sequence_end = (j+sequence_length) if (j+sequence_length) <= max_end else max_end
+                    timeseries_to_append = self.perturbator.apply_perturbation(
+                        timeseries_to_perturb.copy(), j, sequence_end, perturbation=perturbation_method,
+                        reference_timeseries=reference_timeseries)
+                    perturbed_ts.append(timeseries_to_append)
+        perturbed_ts = np.array(perturbed_ts)
 
-        acc = correctly_classified / _y_pred.shape[0]
-        return acc
+        # print()
+        # print(perturbation_method)
+        # print()
+        # print('perturbed_ts')
+        # print(perturbed_ts.shape)
+        # print(reltps_over_threshoold[0])
+        # print(perturbed_ts[0])
+
+        # Expand y_true to match the shape of perturbed_ts
+        y_true_expanded = np.array([
+            y_true[i] 
+            for j in range(true_count_ts[i])
+            for i in range(len(true_count_ts))
+        ])
+
+        # Predict perturbed time series
+        metrics = classification_model.predict(perturbed_ts, y_true_expanded, x_train, y_train, y_test)
+        
+        return metrics['accuracy'][0]
+        #end of _evaluate_sequence
 
 
     

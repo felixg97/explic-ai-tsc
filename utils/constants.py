@@ -125,6 +125,8 @@ argugments:
 configurations:
 --verbose
 --load
+--rebuild
+--generate_plots
 """
 
 COMMANDS = ['help', 'run_complete', 'run_classifier', 'run_explanations', 'run_evaluation']
@@ -171,10 +173,10 @@ DATASETS_NAMES = [
 
 ################################## Classifiers #################################
 CLASSIFIERS = [
-    # 'MLP', # easy TODO: (1)
-    'ResNet', # easy TODO: (2)
-    # 'FCN', # easy TODO: i guess (3.2)
-    'InceptionTime' # easy TODO: i guess (3.1)
+    'MLP', # TODO: (1)
+    'ResNet', # TODO: (2)
+    # 'FCN', # TODO: i guess (3.2)
+    'InceptionTime' # TODO: i guess (3.1)
     #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
 ]
 
@@ -183,16 +185,16 @@ CLASSIFIERS = [
 EXPLANATIONS = [
     'LIME',
     'RISE',
-    'Anchor',
+    # 'Anchor',
     'Occlusion',
-    'Meaningful Perturbation'
+    # 'MeaningfulPerturbation'
 ]
 
 
 ################################## Evaluations #################################
 EVALUATIONS = [
-    'Sanity check', 
-    'Perturbation Analysis'
+    'SanityCheck', 
+    'PerturbationAnalysis'
 ]
 
 ############ Data sets Jakob used ############

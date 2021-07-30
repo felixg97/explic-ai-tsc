@@ -242,7 +242,7 @@ class MLP:
 
         keras.backend.clear_session()
 
-    def predict(self, x_test, y_true,x_train,y_train,y_test,return_df_metrics = True):
+    def predict(self, x_test, y_true,x_train,y_train,y_test,return_df_metrics=True):
         model_path = self.output_directory + 'best_model.hdf5'
         model = keras.models.load_model(model_path)
         y_pred = model.predict(x_test)
@@ -254,8 +254,8 @@ class MLP:
             return y_pred
 
 
-    def predict_input(self, timeseries_instance):
+    def predict_input(self, input, y_true):
         model_path = self.output_directory + 'best_model.hdf5'
         model = keras.models.load_model(model_path)
-        y_pred = model.predict(timeseries_instance)
+        y_pred = model.predict(input)
         return y_pred

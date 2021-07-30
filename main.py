@@ -49,10 +49,10 @@ def determine_arguments(sys_argv):
         print(f'Default settings will be used.')
     if ARGUMENTS[0] in sys_argv:
         datasets = [sys_argv[(sys_argv.index(ARGUMENTS[0]) + 1)]]
-        print(f'Data set chosen:\t {datasets}')
+        print(f'Data set chosen:\t\t {datasets}')
     elif ARGUMENTS[1] in sys_argv:
         datasets = [sys_argv[(sys_argv.index(ARGUMENTS[1]) + 1)]]
-        print(f'Data set:\t {datasets}')
+        print(f'Data set:\t\t {datasets}')
     if ARGUMENTS[2] in sys_argv:
         classifiers = [sys_argv[(sys_argv.index(ARGUMENTS[2]) + 1)]]
         print(f'Classifier chosen:\t {classifiers}')
@@ -60,11 +60,12 @@ def determine_arguments(sys_argv):
         classifiers = [sys_argv[(sys_argv.index(ARGUMENTS[3]) + 1)]]
         print(f'Classifier chosen:\t {classifiers}')
     if ARGUMENTS[4] in sys_argv:
-        iterations = [sys_argv.index(ARGUMENTS[4] + 1)]
+        iterations = [sys_argv[(sys_argv.index(ARGUMENTS[4]) + 1)]]
         print(f'Iterations chosen:\t {iterations}')
     elif ARGUMENTS[5] in sys_argv:
-        iterations = [sys_argv.index(ARGUMENTS[5] + 1)]
+        iterations = [sys_argv[(sys_argv.index(ARGUMENTS[5]) + 1)]]
         print(f'Iterations chosen:\t {iterations}')
+        pass
     if ARGUMENTS[6] in sys_argv:
         explanations = [sys_argv[(sys_argv.index(ARGUMENTS[6]) + 1)]]
         print(f'Eplanation chosen:\t {explanations}')
@@ -89,14 +90,49 @@ def determine_arguments(sys_argv):
 def determine_configurations(sys_argv):
     verbose = False
     load = False
+    rebuild = False
+    generate_plots = False
     if len(sys_argv) == 1:
         pass
     if '--verbose' in sys_argv:
-        verbose = True
-    return verbose, load
+        verbose=True
+    if '--load' in sys_argv:
+        load=True
+    if '--rebuild' in sys_argv:
+        rebuild=True
+    if '--generate_plots' in sys_argv:
+        generate_plots=True
+    return verbose, load, rebuild, generate_plots
+
+def shape_data(dataset):
+    x_train, y_train, x_test, y_test = dataset
+    _x_train = x_train.copy()
+    _y_train = y_train.copy()
+    _x_test = x_test.copy()
+    _y_test = y_test.copy()
+
+    nb_classes = len(np.unique(np.concatenate((_y_train, _y_test), axis=0)))
+
+    # transform the labels from integers to one hot vectors
+    enc = sklearn.preprocessing.OneHotEncoder(categories='auto')
+    enc.fit(np.concatenate((_y_train, _y_test), axis=0).reshape(-1, 1))
+    _y_train = enc.transform(_y_train.reshape(-1, 1)).toarray()
+    _y_test = enc.transform(_y_test.reshape(-1, 1)).toarray()
+
+    # save orignal y because later we will use binary
+    y_true = np.argmax(_y_test, axis=1)
+
+    if len(x_train.shape) == 2:  # if univariate
+        # add a dimension to make it multivariate with one dimension 
+        x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
+        x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 1))
+
+    input_shape = x_train.shape[1:]
+
+    return _x_train, _y_train, _x_test, _y_test, y_true, nb_classes, input_shape
 
 
-def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=False, load_weights=False):
+def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name, verbose=False, build=False, load_weights=False):
     x_train, y_train, x_test, y_test = dataset_dict[dataset_name]
 
     nb_classes = len(np.unique(np.concatenate((y_train, y_test), axis=0)))
@@ -116,26 +152,27 @@ def fit_classifier(output_directory, dataset_dict, dataset_name, classifier_name
         x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 1))
 
     input_shape = x_train.shape[1:]
-    classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, verbose=verbose, load_weights=load_weights)
+    classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, verbose=verbose, build=build, load_weights=load_weights)
 
     classifier.fit(x_train, y_train, x_test, y_test, y_true)
 
 
-def create_classifier(classifier_name, input_shape, nb_classes, output_directory, verbose=False, load_weights=False):
+def create_classifier(classifier_name, input_shape, nb_classes, output_directory, verbose=False, load_weights=False, build=True):
     ## Deep
+    print('hallo hallo', output_directory)
     classifier_name = classifier_name.lower()
     if classifier_name == 'resnet':
         from classifiers import resnet
-        return resnet.ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        return resnet.ResNet(output_directory, input_shape, nb_classes, verbose=verbose, build=build, load_weights=load_weights)
     elif classifier_name == 'mlp':
         from classifiers import MLP
-        return MLP(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        return MLP(output_directory, input_shape, nb_classes, verbose=verbose, build=build, load_weights=load_weights)
     elif classifier_name == 'inceptiontime':
         from classifiers import InceptionTime
-        return InceptionTime(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        return InceptionTime(output_directory, input_shape, nb_classes, verbose=verbose, build=build, load_weights=load_weights)
     elif classifier_name == 'fcn':
         from classifiers import FCN
-        return FCN(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+        return FCN(output_directory, input_shape, nb_classes, verbose=verbose, build=build, load_weights=load_weights)
     ## Ensemble
     # elif classifier_name == 'cote':
     #     from classifiers import COTE
@@ -143,19 +180,44 @@ def create_classifier(classifier_name, input_shape, nb_classes, output_directory
     # elif classifier_name == 'hivecote':
     #     from classifiers import HIVECOTE
     #     return HIVECOTE(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
-    ## Linear
-    # elif classifier_name == 'rocket':
-    #     from classifiers import ResNet
-    #     return ResNet(output_directory, input_shape, nb_classes, verbose=verbose, load_weights=load_weights)
+
+
+def create_explanation(explanation_name):
+    explanation_name = explanation_name.lower()
+    if explanation_name == 'occlusion':
+        from explanations import OcclusionSensitivityUTS
+        return OcclusionSensitivityUTS()
+    elif explanation_name == 'lime':
+        from explanations import LimeUTS
+        return LimeUTS()
+    elif explanation_name == 'rise':
+        from explanations import RiseUTS
+        return RiseUTS()
+    elif explanation_name == 'anchor':
+        from explanations import AnchorUTS
+        return AnchorUTS()
+    elif explanation_name == 'meaningfulperturbation':
+        from explanations import MeaningfulPerturbationUTS
+        return MeaningfulPerturbationUTS()
+
+
+def create_evaluation(evaluation_name):
+    evaluation_name = evaluation_name.lower()
+    if evaluation_name == 'perturbationanalysis':
+        from evaluations import PerturbationAnalysisUTS
+        return PerturbationAnalysisUTS
+    elif evaluation_name == 'sanitycheck':
+        return None
 
 def run_complete(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
     pass
 
-def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, load=False):
+
+def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, load=False, generate_plots=False):
 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
 
-    print(dataset_dict.keys())
+    # print(dataset_dict.keys())
 
     for classifier_name in classifiers:
         # print('Classifier:\t', classifier_name)
@@ -184,13 +246,50 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
                 create_directory(output_directory + '/DONE')
 
 
-def run_explanations(classifiers, iterations, datasets, explanations, verbose=False, load=False):
+def run_explanations(root_dir, classifiers, iterations, datasets, explanations, build=False, verbose=False, load=False):
 
-    for classifier_name in classifiers:
-        pass
+    dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
+
+    for explanation_name in explanations:
+        # print('Explanation:\t', explanation_name)
+        explainer = create_explanation(explanation_name)
+
+        for classifier_name in classifiers:
+            # print('Classifier:\t', classifier_name)
+
+            print(iterations)
+            for iteration in range(iterations):
+                # print('Iteration:\t', iteration)
+
+                for dataset_name in datasets:
+                    # print('Data set:\t', dataset_name)
+
+                    x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[dataset_name])
+
+                    output_directory = f'{root_dir}/results/{classifier_name}/UCRArchive_2018_itr_{iteration}/{dataset_name}/'
+                    classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, build=False)
+
+                    explanations_dir = output_directory + 'explanations'
+                    # print(explanations_dir)
+                    create_directory(explanations_dir)
+                    # NOTE: Has to get out of here at some point
+                    # TODO: Integrate batch_sizes
+                    explanations = [
+                        explainer.explain_instance(x_test[ts_idx], y_true[ts_idx], classifier)
+                        for ts_idx in range(x_test.shape[0])
+                    ]
+                    explanation_name_file = explanation_name.lower()
+                    np.savetxt(explanations_dir + f'/_{explanation_name_file}.csv', explanations, delimiter=',')
+
+                    # print(explanations[:2])
+
+                    pass
 
 
-def run_evaluations(classifiers, iterations, datasets, explanations, evaluations, verbose=False, load=False):
+
+def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, evaluations, build=False, verbose=False, load=False):
+
+
     pass
 
 
@@ -198,7 +297,6 @@ def run_evaluations(classifiers, iterations, datasets, explanations, evaluations
 
 ## For Notebook
 # root_directory = 'C:/git/explic-ai-tsc'
-
 ## For PC
 root_directory = 'D:/git/explic-ai-tsc'
 
@@ -212,18 +310,20 @@ if command not in COMMANDS:
     exit()
 
 datasets, classifiers, iterations, explanations, evaluations, out_path = determine_arguments(sys_argv)
-verbose, load = determine_configurations(sys_argv)
+verbose, load, rebuild, generate_plots = determine_configurations(sys_argv)
 
 print('-----------------------------------------------------------------------')
-print('Configuration:')
+print('Configurations:')
 print()
 print('Data sets: \t', datasets)
-print('Classifier: \t',classifiers) 
-print('Iterations: \t',iterations)
+print('Classifier: \t', classifiers) 
+print('Iterations: \t', iterations)
 print('Explanations: \t',explanations)
-print('Evaluations: \t',evaluations) 
-print('Verbose: \t',verbose) 
-print('Load: \t\t',load) 
+print('Evaluations: \t', evaluations) 
+print('Verbose: \t', verbose) 
+print('Load: \t\t', load) 
+print('Rebuild classifier: \t\t', rebuild) 
+print('Generate plots for explanation: \t\t', generate_plots) 
 print('-----------------------------------------------------------------------')
 
 ## sys.argv management
@@ -234,30 +334,21 @@ if command == 'run_complete':
 elif command == 'run_classifier':
     run_classifiers(root_directory, classifiers, iterations, datasets, verbose=verbose, load=load)
 elif command == 'run_explanations':
-    run_explanations(root_directory, classifiers, iterations, datasets, explanations, verbose=verbose, load=load)
+    run_explanations(root_directory, classifiers, iterations, datasets, explanations, verbose=verbose, load=load, build=rebuild)
 elif command == 'run_evaluation':
-    run_evaluations(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load)
+    run_evaluations(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load, build=rebuild)
 
 
 
-
-# for classifier in classifiers:
-#     for dataset in datasets:
-#         pass
-
-
-
-### RUN:
-##### 1) Read all datasets D := {d1, ..., di} (search for a good example for visualization)
-##### 2) Train all models M := {m1, ..., mn} per Dataset di
-
-#### Run option 1 (most likely version)
-##### 3) Classify all Time Series per di per mn
-##### 4) Time Series Relevance: for each Perturbator P := {p1, ..., pm}
-##### 4.1) For each Time Series Td := {t1, ..., tj} Relevance Vector r(tj, mn, p1)
-
-#### Run option 2 ("getting more and more unlikely" version)
-##### 3) Classify all Time Series per di per mn
-##### 4) Time Series Relevance: for each Feature Perturbator FP := {fp1, ..., fpm}
-##### 4.1) For each Time Series Td := {t1, ..., tj} Relevance Vector r(tj, mn, p1)
-
+# Tests
+# cls && python main.py run_explanations -c MLP -d ECG5000 -ex Occlusion -i 1 -ev PerturbationAnalysis
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#

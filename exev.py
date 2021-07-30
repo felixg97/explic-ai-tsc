@@ -16,7 +16,7 @@ from explanations import AnchorUTS
 from lime import explanation
 from lime import lime_base
 
-from evaluations import PerturbationAnalysis
+from evaluations import PerturbationAnalysisUTS
 
 ################################### Config #####################################
 np.set_printoptions(threshold=sys.maxsize)
@@ -24,7 +24,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 ################################### Methods ####################################
 
-def shape_data(x_train, y_train, x_test, y_test):
+def shape_data(dataset):
     _x_train = x_train.copy()
     _y_train = y_train.copy()
     _x_test = x_test.copy()
@@ -49,13 +49,6 @@ def shape_data(x_train, y_train, x_test, y_test):
     input_shape = x_train.shape[1:]
 
     return _x_train, _y_train, _x_test, _y_test, y_true, nb_classes, input_shape
-
-def reshape_timeseries_instance(timeseries_instance):
-    if len(timeseries_instance.shape) == 2:  # if univariate
-        # add a dimension to make it multivariate with one dimension 
-        timeseries_instance = timeseries_instance.reshape(
-            (timeseries_instance.shape[0], timeseries_instance.shape[1], 1)
-        )
 
 
 ################################ Load Data set #################################
@@ -96,9 +89,12 @@ model = MLP(output_directory_model, input_shape, nb_classes, verbose=True, build
 output_directory_model_results = root_directory + '/results/MLP/UCRArchive_2018_itr_0/ECG5000/_df_metrics.csv'
 test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', skip_header=1)[1]
 
-print('test_accuracy')
-print(test_accuracy)
-print()
+# print('test_accuracy')
+# print(test_accuracy)
+# print()
+
+# metrics = model.predict(x_test, y_true, x_train, y_train, y_test)
+# print(metrics)
 
 ################################## Occlusion ###################################
 explainer = OcclusionSensitivityUTS()
@@ -127,16 +123,42 @@ explainer = OcclusionSensitivityUTS()
 # explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 
 ############################ Perturbation Analysis #############################
-evaluator = PerturbationAnalysis()
+evaluator = PerturbationAnalysisUTS()
 
 print()
 print()
+
+print()
+print('Evaluation of explanation method per instance')
+# print(evaluation.shape)
 
 evaluation = evaluator.evaluate__xai_method(
-    test_accuracy, x_test, y_true,
-    model, explainer, batch_size=3000,
-    verification_method='zero_tp'
+    test_accuracy, x_test, y_true, x_train, y_train, y_test,
+    model, explainer, verification_method='all',batch_size=2,
+    sequence_length=8
 )
+
+# evaluation = evaluator.evaluate__xai_method(
+#     test_accuracy, x_test, y_true, x_train, y_train, y_test,
+#     model, explainer, verification_method='zero_sequence',batch_size=2,
+#     sequence_length=8
+# )
+
+# evaluation = evaluator.evaluate__xai_method(
+#     test_accuracy, x_test, y_true, x_train, y_train, y_test,
+#     model, explainer, verification_method='inverse_sequence',batch_size=2,
+#     sequence_length=8
+# )
+
+# evaluation = evaluator.evaluate__xai_method(
+#     test_accuracy, x_test, y_true, x_train, y_train, y_test,
+#     model, explainer, verification_method='mean_sequence',batch_size=2,
+#     sequence_length=8
+# )
+
+print()
+print('Evaluation of explanation method per instance')
+print(evaluation)
 
 # print()
 # print('Time series to explain')
@@ -149,10 +171,7 @@ evaluation = evaluator.evaluate__xai_method(
 # print(explained_ts.shape)
 # print(explained_ts)
 
-print()
-print('Evaluation of explanation method per instance')
-# print(evaluation.shape)
-print(evaluation)
+
 
 # exp = explained_ts.as_list(label=1)
 # print(exp)
