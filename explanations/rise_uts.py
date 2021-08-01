@@ -105,12 +105,12 @@ class RiseUTS:
             saliency[y_true]
         saliency = np.array(saliency[y_true])
 
-        print('y_true')
-        print(y_true)
-        print()
-        print('saliency')
-        print(saliency.shape)
-        print(saliency)
+        # print('y_true')
+        # print(y_true)
+        # print()
+        # print('saliency')
+        # print(saliency.shape)
+        # print(saliency)
         return saliency
 
     def _generate_masks(self, timeseries_instance, N, s, p):
