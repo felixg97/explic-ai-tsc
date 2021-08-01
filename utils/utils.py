@@ -1,8 +1,11 @@
+import os
+import operator
+import sklearn
+import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-import operator
+import tensorflow as tf
 
 from utils.constants import DATASETS_NAMES
 
@@ -147,6 +150,36 @@ def read_all_datasets(root_dir, archive_name, split_val=False):
 
     return datasets_dict
 
+
+def shape_data(dataset):
+    x_train, y_train, x_test, y_test = dataset
+
+    _x_train = x_train.copy()
+    _y_train = y_train.copy()
+    _x_test = x_test.copy()
+    _y_test = y_test.copy()
+
+    nb_classes = len(np.unique(np.concatenate((_y_train, _y_test), axis=0)))
+
+    # transform the labels from integers to one hot vectors
+    enc = sklearn.preprocessing.OneHotEncoder(categories='auto')
+    enc.fit(np.concatenate((_y_train, _y_test), axis=0).reshape(-1, 1))
+    _y_train = enc.transform(_y_train.reshape(-1, 1)).toarray()
+    _y_test = enc.transform(_y_test.reshape(-1, 1)).toarray()
+
+    # save orignal y because later we will use binary
+    y_true = np.argmax(_y_test, axis=1)
+
+    if len(x_train.shape) == 2:  # if univariate
+        # add a dimension to make it multivariate with one dimension 
+        x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
+        x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 1))
+
+    input_shape = x_train.shape[1:]
+
+    return _x_train, _y_train, _x_test, _y_test, y_true, nb_classes, input_shape
+
+
 ## Calculate metrics: precision, accuracy, recall + report (duration) TODO:
 def calculate_metrics(y_true, y_pred, duration, y_true_val=None, y_pred_val=None):
     res = pd.DataFrame(data=np.zeros((1, 4), dtype=np.float), index=[0],
@@ -161,6 +194,7 @@ def calculate_metrics(y_true, y_pred, duration, y_true_val=None, y_pred_val=None
     res['recall'] = recall_score(y_true, y_pred, average='macro')
     res['duration'] = duration
     return res
+    
 
 ## Saves model logs TODO:
 def save_logs(output_directory, hist, y_pred, y_true, duration, lr=True, 
@@ -208,5 +242,84 @@ def plot_epochs_metric(hist, file_name, metric='loss'):
     plt.savefig(file_name, bbox_inches='tight')
     plt.close()
 
+
+def plot_relevance(timeseries, relevance, figsize=(15, 1), alpha=.5, linewidth=3.6, colormap='Reds', 
+        show=True, save=False, output_dir=None, file_name=None):
+    cmap = plt.get_cmap(colormap)
+    
+    timeseries_in = np.array(timeseries)
+    relevance_in = np.array(relevance)
+    
+    if timeseries_in.shape != relevance_in.shape:
+        raise Exception('Time series and relevance are not the same shape')
+    
+    if type(timeseries_in.tolist())!=list or type(relevance_in.tolist())!=list:
+        timeseries_in = np.array([timeseries])
+        relevance_in = np.array([relevance])
+        
+
+    if len(timeseries_in.shape) == 1:
+        n_ts = 1
+        tsmin = timeseries_in.min()
+        tsmax = timeseries_in.max()
+        tsheight = round(abs(tsmin) + abs(tsmax)) + 1
+        tswidth = timeseries_in.shape[0]
+        x, y = generate_filled_mngrid(tsmin, tsmax, tswidth)
+        tsheight = tsheight+(x.shape[0]-tsheight)
+        z = np.array([relevance for idx in range(int(tsheight))])
+        fig, ax = plt.subplots(nrows=n_ts, ncols=1, figsize=figsize)
+        ax.pcolormesh(x, y, z, cmap='Reds', shading='auto')
+        ax.plot(timeseries_in)
+    else:
+        n_ts = timeseries_in.shape[0]
+        new_figsize = (15*.84, n_ts*1.35)            
+        fig, ax = plt.subplots(nrows=n_ts, ncols=1, figsize=new_figsize)
+        fig.tight_layout(pad=2)
+        for i in range(n_ts):
+            tsmin = timeseries_in[i].min()
+            tsmax = timeseries_in[i].max()
+            tsheight = round(abs(tsmin) + abs(tsmax)) + 1
+            tswidth = timeseries_in[i].shape[0]
+            x, y = generate_filled_mngrid(tsmin, tsmax, tswidth)
+            tsheight = tsheight+(x.shape[0]-tsheight)
+            z = np.array([relevance[i] for idx in range(int(tsheight))])
+            ax[i].plot(timeseries_in[i])
+            ax[i].pcolormesh(x, y, z, cmap='Reds', shading='auto')
+    
+    if show:
+        plt.show()
+    if output_dir and save:
+        if file_name:
+            save_pig(output_dir+'/'+file_name+'_explanation.png')
+        else:
+            save_pig(output_dir+'/explanation.png')
+    
+def generate_filled_mngrid(min_val, max_val, width):
+    # (height, width) (abs(min)+max, width)
+    x, y = [], []
+    min_f, max_c = math.floor(min_val), math.ceil(max_val)
+    height = abs(min_f) + abs(max_c)
+
+    ## gen x
+    for row_idx in range(height + 1):
+        init_val = 0
+        to_append = []
+        for col_idx in range(width):
+            to_append.append(init_val)
+            init_val+=1
+        x.append(to_append)
+    x = np.array(x)
+
+    ## gen y
+    init_val = min_f
+    for row_idx in range(height + 1):
+        to_append = []
+        for col_idx in range(width):
+            to_append.append(init_val)
+        init_val += 1
+        y.append(to_append)
+    y = np.array(y)
+    
+    return x, y
 
 

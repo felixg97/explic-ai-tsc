@@ -25,6 +25,8 @@ np.set_printoptions(threshold=sys.maxsize)
 ################################### Methods ####################################
 
 def shape_data(dataset):
+    x_train, y_train, x_test, y_test = dataset
+
     _x_train = x_train.copy()
     _y_train = y_train.copy()
     _x_test = x_test.copy()
@@ -62,9 +64,7 @@ dataset_dict = read_all_datasets(root_directory, 'UCRArchive_2018')
 
 curr_dataset = 'ECG5000'
 
-x_train, y_train, x_test, y_test = dataset_dict[curr_dataset]
-
-x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(x_train, y_train, x_test, y_test)
+x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[curr_dataset])
 
 print('Dataset shape')
 print(x_train.shape)
@@ -78,7 +78,7 @@ print('y_test')
 print(y_test.shape)
 # print(y_test)
 
-timeseries_instance = x_test[0]
+timeseries_instance = x_test[:2]
 
 ############################ Load Pretrained Model #############################
 from classifiers import MLP
@@ -97,7 +97,7 @@ test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', ski
 # print(metrics)
 
 ################################## Occlusion ###################################
-explainer = OcclusionSensitivityUTS()
+# explainer = OcclusionSensitivityUTS()
 
 # relevance = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 #################################### LIME ######################################
@@ -107,7 +107,7 @@ explainer = OcclusionSensitivityUTS()
 # number of samples: 1000 (look for hyperparam)
 # explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 #################################### RISE ######################################
-# explainer = RiseUTS()
+explainer = RiseUTS()
 
 ## Hyperparams
 # ResNet50 : 8000 masks 
@@ -120,45 +120,49 @@ explainer = OcclusionSensitivityUTS()
 ########################### Meaningful Perturbation ############################
 # explainer = MeaningfulPerturbationUTS()
 
-# explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
+# explained_ts = explainer.explain_instance(x_test[0], y_true[0], model)
+explained_ts = explainer.explain(x_test[:2], y_true[:2], model)
 
 ############################ Perturbation Analysis #############################
-evaluator = PerturbationAnalysisUTS()
+# evaluator = PerturbationAnalysisUTS()
 
 print()
+print('explained_ts')
+print(explained_ts.shape)
+print(explained_ts)
 print()
 
-print()
-print('Evaluation of explanation method per instance')
+# print()
+# print('Evaluation of explanation method per instance')
 # print(evaluation.shape)
 
-evaluation = evaluator.evaluate__xai_method(
-    test_accuracy, x_test, y_true, x_train, y_train, y_test,
-    model, explainer, verification_method='all',batch_size=2,
-    sequence_length=8
-)
+# evaluation = evaluator.evaluate_xai_method(
+#     test_accuracy, x_test, y_true, x_train, y_train, y_test,
+#     model, explainer, verification_method='all',batch_size=2,
+#     sequence_length=8
+# )
 
-# evaluation = evaluator.evaluate__xai_method(
+# evaluation = evaluator.evaluate_xai_method(
 #     test_accuracy, x_test, y_true, x_train, y_train, y_test,
 #     model, explainer, verification_method='zero_sequence',batch_size=2,
 #     sequence_length=8
 # )
 
-# evaluation = evaluator.evaluate__xai_method(
+# evaluation = evaluator.evaluate_xai_method(
 #     test_accuracy, x_test, y_true, x_train, y_train, y_test,
 #     model, explainer, verification_method='inverse_sequence',batch_size=2,
 #     sequence_length=8
 # )
 
-# evaluation = evaluator.evaluate__xai_method(
+# evaluation = evaluator.evaluate_xai_method(
 #     test_accuracy, x_test, y_true, x_train, y_train, y_test,
 #     model, explainer, verification_method='mean_sequence',batch_size=2,
 #     sequence_length=8
 # )
 
-print()
-print('Evaluation of explanation method per instance')
-print(evaluation)
+# print()
+# print('Evaluation of explanation method per instance')
+# print(evaluation)
 
 # print()
 # print('Time series to explain')
@@ -176,8 +180,8 @@ print(evaluation)
 # exp = explained_ts.as_list(label=1)
 # print(exp)
 
-print()
-print()
+# print()
+# print()
 # print('Explanaaaaaaaaations')
 # print(explained_ts.shape)
 # print(explained_ts[0])

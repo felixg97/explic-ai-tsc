@@ -1,3 +1,6 @@
+"""
+https://github.com/emanuel-metzenthin/Lime-For-Time/blob/master/lime_timeseries.py
+"""
 import numpy as np
 import sklearn
 from lime import explanation
@@ -42,7 +45,7 @@ class LimeTimeSeriesExplainer(object):
                  signal_names=["not specified"]
                  ):
         """Init function.
-        Args:
+        Args:s
             kernel_width: kernel width for the exponential kernel
             verbose: if true, print local prediction values from linear model
             class_names: list of class names, ordered according to whatever the

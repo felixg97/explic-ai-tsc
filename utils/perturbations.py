@@ -10,9 +10,9 @@ class UTSPerturbations:
         timeseries = timeseries_instance.copy()
         if perturbation == 'occlusion':
             self.perturb_occlusion(timeseries, start_idx, end_idx)
+        # elif perturbation == 'mean':
+            # self.perturb_mean(timeseries, start_idx, end_idx)
         elif perturbation == 'mean':
-            self.perturb_mean(timeseries, start_idx, end_idx)
-        elif perturbation == 'total_mean':
             self.perturb_total_mean(timeseries, start_idx, end_idx)
         elif perturbation == 'noise':
             self.perturb_noise(timeseries, start_idx, end_idx)

@@ -135,12 +135,12 @@ class LimeUTS(object):
 
 
     def __init__(self, 
-        kernel_width=25, 
-        kernel=None, 
-        verbose=False, 
-        random_state=None,
-        feature_selection='auto',
-        signal_names=["not specified"]):
+                kernel_width=25, 
+                kernel=None,
+                class_names=None,
+                verbose=False,
+                feature_selection='auto',
+                signal_names=["not specified"]):
         """Init function
         
         Args:
@@ -161,30 +161,33 @@ class LimeUTS(object):
         kernel_width = float(kernel_width)
 
         if kernel is None:
+            # exponential kernel
             def kernel(d, kernel_width):
                 return np.sqrt(np.exp(-(d ** 2) / kernel_width ** 2))
 
         kernel_fn = partial(kernel, kernel_width=kernel_width)
 
-        self.random_state = check_random_state(random_state)    
+        self.base = lime_base.LimeBase(kernel, verbose)
+        self.class_names = class_names
         self.feature_selection = feature_selection
-        self.base = lime_base.LimeBase(kernel_fn, verbose=verbose, random_state=self.random_state)
+        self.signal_names = signal_names
 
+    
+    def explain(self):
+        pass
 
     def explain_instance(self, 
-        timeseries_instance,
-        true_class=1,
-        patch_size=1,
-        labels=(1,), # TODO: testen ob das damit geht -> true class
-        top_labels=None,
-        model=None, 
-        num_features=10, 
-        num_samples=500, 
-        random_seed=None, 
-        perturbation='occlusion',
-        distance_metric='eucledian',
-        model_regressor=None,
-        ):
+                        timeseries_instance,
+                        y_true,
+                        model,
+                        labels=(1,),
+                        top_labels=None, 
+                        num_features=10, 
+                        num_samples=5000, 
+                        model_regressor=None,
+                        perturbation='occlusion',
+                        distance_metric='eucledian',
+                        patch_size=1):
         """Generates explanations for a prediction.
 
         Generates neighborhood by randomly perturbing features from the instance.
@@ -200,12 +203,12 @@ class LimeUTS(object):
             raise Exception('No model given.')
 
         permutations, predictions, distances = self._data_labels_distance(
-            timeseries_instance, model, num_samples, patch_size=patch_size, 
+            timeseries_instance, model, num_samples, y_true, patch_size=patch_size, 
             perturbation=perturbation, distance_metric=distance_metric)
 
-        # if self.class_names is None:
-        #     self.
-        class_names = [str(x) for x in range(predictions[0].shape[0])]
+
+        if self.class_names is None:
+                self.class_names = [str(x) for x in range(predictions[0].shape[0])]
 
         domain_mapper = UTSDomainMapper(patch_size)
 
@@ -235,6 +238,7 @@ class LimeUTS(object):
         timeseries_instance,
         model,
         num_samples,
+        y_true,
         patch_size=1,
         perturbation='occlusion',
         distance_metric='eucledian'
@@ -265,6 +269,11 @@ class LimeUTS(object):
         features_range = range(num_slices)
         original_data = [timeseries_instance.copy()]
 
+        print()
+        # print('perturbation_matrix')
+        # print(perturbation_matrix.shape)
+        # print(perturbation_matrix[0])
+
         perturbator = UTSPerturbations()
 
         for i, num_inactive in enumerate(deact_per_sample, start=1):
@@ -274,28 +283,35 @@ class LimeUTS(object):
             inactive_idxs = np.random.choice(features_range, num_inactive,
                 replace=False)
 
-            num_channels_to_perturb = np.random.randint(1, num_channels+1)
+            print(inactive_idxs)
 
-            channels_to_perturb = np.random.choice(range(num_channels),
-                num_channels_to_perturb, replace=False)
-
-            # print(f'Sample {i}, perturbung {channels_to_perturb}')
-
-            for chan in channels_to_perturb:
-                perturbation_matrix[i, chan, inactive_idxs] = 0
+            perturbation_matrix[i, 0, inactive_idxs] = 0
 
             tmp_series = timeseries_instance.copy()
 
             for idx in inactive_idxs:
+                print(idx)
                 start_idx = idx * values_per_slice
                 end_idx = start_idx + values_per_slice
                 end_idx = min(end_idx, len_ts)
 
+                print(start_idx)
+                print(end_idx)
+
                 perturbator.apply_perturbation(tmp_series, start_idx, end_idx, 
                     perturbation=perturbation)
+            
             original_data.append(tmp_series)
+            
+            break
 
-        predictions = model.predict_input(np.array(original_data))
+        # print(inca)
+        print(original_data[0])
+
+
+        return
+
+        # predictions = model.predict_input(original_data, y_true)
 
         # print()
         # print()

@@ -120,7 +120,7 @@ class PerturbationAnalysisUTS:
         self.perturbator = UTSPerturbations()
 
 
-    def evaluate__xai_method(self, test_accuracy, x_test, y_true, x_train, y_train, 
+    def evaluate_xai_method(self, test_accuracy, x_test, y_true, x_train, y_train, 
         y_test, classification_model, xai_model, batch_size=0, quality_metric='acc', 
         threshold=90, sequence_length=1, verification_method='all', database_name='not specified', 
         classification_model_name='not specified', xai_method_name='not specified'):

@@ -52,9 +52,25 @@ class RiseUTS:
     def __init__(self):
         pass    
 
+    
+    def explain(self, timeseries_data, y_true, model, N=200, s=8, p=.5, batch_size=100):
+        _timeseries_data = np.array(timeseries_data)
+        _y_true = np.array(y_true)
+        
+        if type(_timeseries_data.tolist())!=list:
+            _timeseries_data = np.array([[timeseries_data]])
+        if type(_y_true.tolist())!=list:
+            _y_true = np.array([[y_true]])
 
-    def explain_instance(self, timeseries_instance, model=None, true_class=None, 
-            N=2000, s=8, p=.5, batch_size=100):
+        explanations = np.array([
+            self.explain_instance(_timeseries_data[idx], _y_true[idx], model)
+            for idx in range(_timeseries_data.shape[0]) 
+        ])
+        return explanations
+
+
+    def explain_instance(self, timeseries_instance, y_true, model,
+            N=200, s=8, p=.5, batch_size=100):
         """Explains instance
 
         Default values of N, s and p are hyperparameters.
@@ -78,15 +94,23 @@ class RiseUTS:
         masked = timeseries_instance * masks
 
         for i in range(0, N, batch_size):
-            predicitons.append(model.predict_input(masked[i:min(i+batch_size, N)]))
+            predicitons.append(model.predict_input(masked[i:min(i+batch_size, N)], y_true))
         
         predicitons = np.concatenate(predicitons)
+
         saliency = predicitons.T.dot(masks.reshape(N, -1)).reshape(-1, *[len_ts])
         saliency = saliency / N / p
 
-        if true_class:
-            saliency[true_class]
+        if y_true:
+            saliency[y_true]
+        saliency = np.array(saliency[y_true])
 
+        print('y_true')
+        print(y_true)
+        print()
+        print('saliency')
+        print(saliency.shape)
+        print(saliency)
         return saliency
 
     def _generate_masks(self, timeseries_instance, N, s, p):
@@ -150,6 +174,7 @@ class RiseUTS:
 
     def _forward(self, x):
         pass
+
 
     def _interpolate(self, array1d, out_shape, interpolation_method='fourier'):
         # print()

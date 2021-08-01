@@ -17,10 +17,26 @@ class OcclusionSensitivityUTS:
     """
     Performs occlusion sensitivity on univariate time series
     """
-
-    def __init__(self, batch_size=None, perturbation='occlusion'):
+    def __init__(self, batch_size=None):
         self.batch_size = batch_size
-        self.perturbation = perturbation
+
+    def explain(self, timeseries_data, y_true, model, patch_size=1,
+        perturbation='occlusion'):
+        _timeseries_data = np.array(timeseries_data)
+        _y_true = np.array(y_true)
+        
+        if type(_timeseries_data.tolist())!=list:
+            _timeseries_data = np.array([[timeseries_data]])
+        if type(_y_true.tolist())!=list:
+            _y_true = np.array([[y_true]])
+
+        explanations = np.array([
+            self.explain_instance(_timeseries_data[idx], _y_true[idx], model,
+                perturbation=perturbation)
+            for idx in range(_timeseries_data.shape[0]) 
+        ])
+        return explanations
+
 
     # TODO: integrieren in jeder explanation
     def explain_instance( 
@@ -29,6 +45,7 @@ class OcclusionSensitivityUTS:
         true_class,
         model,
         patch_size=1,
+        perturbation='occlusion'
     ):
         """
         Computes Occlusion sensitity maps for a specific time_series instance,
@@ -55,7 +72,8 @@ class OcclusionSensitivityUTS:
 
         # generate perturbed time series
         perturbed_timeseries = np.array([ 
-            perturbator.apply_perturbation(timeseries_instance.copy(), end_idx, (end_idx + patch_size))
+            perturbator.apply_perturbation(timeseries_instance.copy(), 
+                end_idx, (end_idx + patch_size), perturbation=perturbation)
             for start_idx, end_idx in enumerate(range(0, len(timeseries_instance), patch_size))
         ])
 
