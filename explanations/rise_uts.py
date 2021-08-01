@@ -63,7 +63,14 @@ class RiseUTS:
             _y_true = np.array([[y_true]])
 
         explanations = np.array([
-            self.explain_instance(_timeseries_data[idx], _y_true[idx], model)
+            self.explain_instance(
+                _timeseries_data[idx], 
+                _y_true[idx], 
+                model,
+                N=N,
+                s=s,
+                p=p,
+                batch_size=batch_size)
             for idx in range(_timeseries_data.shape[0]) 
         ])
         return explanations
