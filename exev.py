@@ -9,9 +9,9 @@ import tensorflow as tf
 from utils.utils import read_all_datasets
 from explanations import OcclusionSensitivityUTS
 from explanations import MeaningfulPerturbationUTS
-from explanations import LimeUTS
 from explanations import RiseUTS
 from explanations import AnchorUTS
+from explanations import LimeTimeSeriesExplainer
 
 from lime import explanation
 from lime import lime_base
@@ -102,12 +102,13 @@ test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', ski
 # relevance = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 #################################### LIME ######################################
 # explainer = LimeUTS()
+# explainer = LimeTimeSeriesExplainer()
 
 ## Hyperparams
 # number of samples: 1000 (look for hyperparam)
 # explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 #################################### RISE ######################################
-explainer = RiseUTS()
+# explainer = RiseUTS()
 
 ## Hyperparams
 # ResNet50 : 8000 masks 
@@ -118,10 +119,10 @@ explainer = RiseUTS()
 
 # explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 ########################### Meaningful Perturbation ############################
-# explainer = MeaningfulPerturbationUTS()
+explainer = MeaningfulPerturbationUTS()
 
-# explained_ts = explainer.explain_instance(x_test[0], y_true[0], model)
-explained_ts = explainer.explain(x_test[:2], y_true[:2], model)
+explained_ts = explainer.explain_instance(x_test[0], y_true[0], model)
+# explained_ts = explainer.explain(x_test[:2], y_true[:2], model)
 
 ############################ Perturbation Analysis #############################
 # evaluator = PerturbationAnalysisUTS()

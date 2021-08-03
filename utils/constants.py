@@ -162,8 +162,8 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 DATASETS_NAMES = [
-    'BeetleFly', 
-    'Earthquakes',
+    # 'BeetleFly', 
+    # 'Earthquakes',
     'ECG5000',
     'ElectricDevices',
     'OSULeaf'

@@ -20,8 +20,8 @@ class OcclusionSensitivityUTS:
     def __init__(self, batch_size=None):
         self.batch_size = batch_size
 
-    def explain(self, timeseries_data, y_true, model, patch_size=1,
-        perturbation='occlusion'):
+    def explain(self, timeseries_data, y_true, model, patch_size=5,
+        perturbation='zero'):
         _timeseries_data = np.array(timeseries_data)
         _y_true = np.array(y_true)
         
@@ -45,7 +45,7 @@ class OcclusionSensitivityUTS:
         true_class,
         model,
         patch_size=1,
-        perturbation='occlusion'
+        perturbation='zero'
     ):
         """
         Computes Occlusion sensitity maps for a specific time_series instance,
@@ -83,25 +83,31 @@ class OcclusionSensitivityUTS:
         # predict perturbed time series
         predictions = model.predict_input(perturbed_timeseries, true_class)
 
+        # print(true_class)
+        # print(predictions[0])
+
         # extract predictions of time series based on true class
         target_class_predictions = [
-            prediction[true_class - 1] for prediction in predictions
+            # prediction[true_class - 1] for prediction in predictions
+            prediction[true_class] for prediction in predictions
         ]
 
+        # print(target_class_predictions[0])
+
         # generate array with size of time series
-        confidence_map = np.zeros(
+        sensitivtiy_map = np.zeros(
             math.ceil(len(timeseries_instance))
         )
 
         # assign every prediction to the right place/subsequence of the
         # confidence map
         counter = 0
-        for idx in range(len(confidence_map)):
-            confidence_map[idx] = 1 - target_class_predictions[counter]
+        for idx in range(len(sensitivtiy_map)):
+            sensitivtiy_map[idx] = 1 - target_class_predictions[counter]
             if idx % patch_size == (patch_size - 1):
                 counter +=1
 
-        # attribution_map = [list(i) for i in zip(timeseries_instance, confidence_map)]
+        # attribution_map = [list(i) for i in zip(timeseries_instance, sensitivtiy_map)]
 
         # return np.array(attribution_map)
-        return np.array(confidence_map)
+        return np.array(sensitivtiy_map)

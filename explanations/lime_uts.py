@@ -173,7 +173,18 @@ class LimeUTS(object):
         self.signal_names = signal_names
 
     
-    def explain(self):
+    def explain(self, 
+                timeseries_data,
+                y_true,
+                model,
+                labels=(1,),
+                top_labels=None, 
+                num_features=10, 
+                num_samples=5000, 
+                model_regressor=None,
+                perturbation='occlusion',
+                distance_metric='eucledian',
+                patch_size=1):
         pass
 
     def explain_instance(self, 

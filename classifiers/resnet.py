@@ -182,3 +182,9 @@ class ResNet:
             test_duration = time.time() - start_time
             save_test_duration(self.output_directory + 'test_duration.csv', test_duration)
             return y_pred
+
+    def predict_input(self, input, y_true):
+        model_path = self.output_directory + 'best_model.hdf5'
+        model = keras.models.load_model(model_path)
+        y_pred = model.predict(input)
+        return y_pred

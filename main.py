@@ -1,8 +1,11 @@
 import os
+from time import time
 import numpy as np
 import sys
 import sklearn
 import utils
+
+import math
 
 from utils.utils import read_all_datasets
 from utils.utils import create_directory
@@ -188,8 +191,8 @@ def create_explanation(explanation_name):
         from explanations import OcclusionSensitivityUTS
         return OcclusionSensitivityUTS()
     elif explanation_name == 'lime':
-        from explanations import LimeUTS
-        return LimeUTS()
+        from explanations import LimeTimeSeriesExplainer
+        return LimeTimeSeriesExplainer()
     elif explanation_name == 'rise':
         from explanations import RiseUTS
         return RiseUTS()
@@ -197,8 +200,9 @@ def create_explanation(explanation_name):
         from explanations import AnchorUTS
         return AnchorUTS()
     elif explanation_name == 'meaningfulperturbation':
-        from explanations import MeaningfulPerturbationUTS
-        return MeaningfulPerturbationUTS()
+        # from explanations import MeaningfulPerturbationUTS
+        # return MeaningfulPerturbationUTS()
+        pass
 
 
 def create_evaluation(evaluation_name):
@@ -250,44 +254,95 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
 
-    for explanation_name in explanations:
-        # print('Explanation:\t', explanation_name)
-        explainer = create_explanation(explanation_name)
+    for classifier_name in classifiers:
+        print('Classifier:\t', classifier_name)
 
-        for classifier_name in classifiers:
-            # print('Classifier:\t', classifier_name)
+        print(iterations)
+        for iteration in range(iterations):
+            print('Iteration:\t', iteration)
 
-            print(iterations)
-            for iteration in range(iterations):
-                # print('Iteration:\t', iteration)
+            for dataset_name in datasets:
+                print('Data set:\t', dataset_name)
 
-                for dataset_name in datasets:
-                    # print('Data set:\t', dataset_name)
+                x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[dataset_name])
 
-                    x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[dataset_name])
+                output_directory = f'{root_dir}/results/{classifier_name}/UCRArchive_2018_itr_{iteration}/{dataset_name}/'
+                classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, build=False)
+                explanations_dir = output_directory + 'explanations'
+                create_directory(explanations_dir)
 
-                    output_directory = f'{root_dir}/results/{classifier_name}/UCRArchive_2018_itr_{iteration}/{dataset_name}/'
-                    classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, build=False)
+                timeseries_len = round(x_train.shape[1] / 4)
 
-                    explanations_dir = output_directory + 'explanations'
-                    # print(explanations_dir)
-                    create_directory(explanations_dir)
-                    # NOTE: Has to get out of here at some point
-                    # TODO: Integrate batch_sizes
-                    explanations = [
-                        explainer.explain_instance(x_test[ts_idx], y_true[ts_idx], classifier)
-                        for ts_idx in range(x_test.shape[0])
-                    ]
-                    explanation_name_file = explanation_name.lower()
-                    np.savetxt(explanations_dir + f'/_{explanation_name_file}.csv', explanations, delimiter=',')
+                perturbations = ['zero', 'mean']
 
-                    # print(explanations[:2])
+                #### Occlusion
+                # print('--- occlusion ---')
+                # explainer = create_explanation('Occlusion')
+                # for perturbation in perturbations:
+                #     print('Perturbation:\t', perturbation)
+                #     patch_size_step = round(timeseries_len/20)
+                #     for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                #         print('Patch_size:\t', patch_size)
+                #         relevance = explainer.explain(x_test, y_true, classifier, patch_size=patch_size)
+                #         np.savetxt(explanations_dir + f'/occlusion_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
 
-                    pass
+                #### LIME
+                # print()
+                # print('--- lime ---')
+                # explainer = create_explanation('LIME')
+                # distance_metrics = ['dtw', 'euclidean', 'cosine']
+                # for distance_metric in distance_metrics:
+                #     print('Distance_metric:\t', distance_metric)
+                #     for perturbation in perturbations:
+                #         print('Perturbation:\t', perturbation)
+                #         ## samples 
+                #         patch_size_step = round(timeseries_len/50)
+                #         for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                #             print('Patch_size:\t', patch_size)
+                #             relevance = explainer.explain(x_test, y_true, classifier, 
+                #                 patch_size=patch_size, distance_metric=distance_metric)
+                #             np.savetxt(explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
 
+                ## RISE TODO:
+                print()
+                print('--- rise ---')
+                explainer = create_explanation('RISE')
+                interpolations = ['linear', 'fourier']
+                for interpolation in interpolations:
+                    print('Interpolation:\t', interpolation)
+                    for batch_size in range(100, x_test.shape[0], 50):
+                        print('Batch_size:\t', batch_size)
+                        relevance = explainer.explain(x_test, y_true, classifier, interpolation=interpolation)
+                        np.savetxt(explanations_dir + f'/lime_{interpolation}_{perturbation}_batchs_{batch_size}.csv', relevance, delimiter=',')
 
 
 def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, evaluations, build=False, verbose=False, load=False):
+
+    dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
+
+    for classifier_name in classifiers:
+        print('Classifier:\t', classifier_name)
+
+        for iteration in iterations:
+            print('Iteration:\t', iteration)
+
+            for dataset_name in datasets:
+                print('Data set:\t', dataset_name)
+
+                x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[dataset_name])
+
+                #### Occlusion
+                print('--- occlusion ---')
+
+
+                ### LIME
+                print()
+                print('--- lime ---')
+
+
+                ### RISE
+                print()
+                print('--- rise ---')
 
 
     pass

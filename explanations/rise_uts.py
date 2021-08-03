@@ -39,11 +39,13 @@ Inspired by https://github.com/eclique/RISE
 #
 # 3) Crop areas T with uniformly random indents from (0) up to (C[T])
 #
-import scipy
 import numpy as np
+import pandas as pd
 
 from skimage.transform import resize
 from scipy import signal
+from scipy.interpolate import interp1d
+
 
 class RiseUTS:
     
@@ -53,7 +55,8 @@ class RiseUTS:
         pass    
 
     
-    def explain(self, timeseries_data, y_true, model, N=200, s=8, p=.5, batch_size=100):
+    def explain(self, timeseries_data, y_true, model, N=200, s=8, p=.5, 
+        batch_size=100, interpolation='fourier'):
         _timeseries_data = np.array(timeseries_data)
         _y_true = np.array(y_true)
         
@@ -70,14 +73,15 @@ class RiseUTS:
                 N=N,
                 s=s,
                 p=p,
-                batch_size=batch_size)
+                batch_size=batch_size,
+                interpolation=interpolation)
             for idx in range(_timeseries_data.shape[0]) 
         ])
         return explanations
 
 
     def explain_instance(self, timeseries_instance, y_true, model,
-            N=200, s=8, p=.5, batch_size=100):
+            N=200, s=8, p=.5, batch_size=100, interpolation='fourier'):
         """Explains instance
 
         Default values of N, s and p are hyperparameters.
@@ -91,7 +95,7 @@ class RiseUTS:
             p: 
         """
         # Generate masks        
-        masks = self._generate_masks(timeseries_instance, N, s, p)
+        masks = self._generate_masks(timeseries_instance, N, s, p, interpolation)
         predicitons = []
         len_ts = len(timeseries_instance)
 
@@ -120,7 +124,7 @@ class RiseUTS:
         # print(saliency)
         return saliency
 
-    def _generate_masks(self, timeseries_instance, N, s, p):
+    def _generate_masks(self, timeseries_instance, N, s, p, interpolation):
         """Randomly generates binaray masks 
         Arg:
             N: hyperparam, N masks
@@ -172,23 +176,20 @@ class RiseUTS:
             # is the size of the cell in the upsampled mask
 
             # Upsampling Cropping
-            masks[i, :] = self._interpolate(grid[i], up_size, interpolation_method='fourier')[x:(x+len_ts)]
+            masks[i, :] = self._interpolate(grid[i], up_size, interpolation_method=interpolation)[x:(x+len_ts)]
             
         # print() 
         return masks
 
 
-
-    def _forward(self, x):
-        pass
-
-
     def _interpolate(self, array1d, out_shape, interpolation_method='fourier'):
-        # print()
         if interpolation_method == 'linear':
+            factor = len(array1d) / out_shape
+            n = int(np.ceil(len(array1d) / factor))
+            f = interp1d(np.linspace(0, 1, len(array1d)), array1d, 'linear')
+            return f(np.linspace(0, 1, n))
+
             # return np.interp(array1d, )
-            pass
         elif interpolation_method == 'fourier':
             return signal.resample(array1d, out_shape, axis=0)
-            pass
     

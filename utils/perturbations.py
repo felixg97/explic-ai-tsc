@@ -8,7 +8,7 @@ class UTSPerturbations:
     def apply_perturbation(self, timeseries_instance, start_idx, end_idx, 
         perturbation='occlusion', reference_timeseries=None):
         timeseries = timeseries_instance.copy()
-        if perturbation == 'occlusion':
+        if perturbation == 'zero':
             self.perturb_occlusion(timeseries, start_idx, end_idx)
         # elif perturbation == 'mean':
             # self.perturb_mean(timeseries, start_idx, end_idx)
@@ -21,6 +21,10 @@ class UTSPerturbations:
         elif perturbation == 'sequence_swap': # or flipping
             self.perturb_sequence_swap(timeseries, start_idx, end_idx)
         
+        # print('time series perturbation')
+        # print('Indices:', start_idx, end_idx)
+        # print('Perturbation:', perturbation)
+        # print(timeseries_instance)
         return timeseries
 
 

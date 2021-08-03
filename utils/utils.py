@@ -322,4 +322,33 @@ def generate_filled_mngrid(min_val, max_val, width):
     
     return x, y
 
+import csv
+def save_evaluation_dict(file_name, dict):
+
+    csv_colummns = [
+        'verification', 
+        'quality_metric', 
+        'batch', 
+        'threshold', 
+        'sequence_length',
+        'zero_timepoint',
+        'inverse_timepoint',
+        'mean_timepoint',
+        'swap_sequence',
+        'zero_sequence',
+        'inverse_sequence',
+        'swap_sequence',
+        'duration'
+    ]
+
+    try:
+        with open(file_name, 'w'):
+            writer = csv.DictWriter(file_name, fieldnames=csv_colummns)
+            writer.writeheader()
+            for data in dict:
+                writer.writerow(data)
+    except:
+        print('sth went wrong writing dict to csv ', file_name)
+
+    pass
 
