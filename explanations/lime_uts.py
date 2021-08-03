@@ -182,7 +182,7 @@ class LimeUTS(object):
                 num_features=10, 
                 num_samples=5000, 
                 model_regressor=None,
-                perturbation='occlusion',
+                perturbation='zero',
                 distance_metric='eucledian',
                 patch_size=1):
         pass
@@ -196,7 +196,7 @@ class LimeUTS(object):
                         num_features=10, 
                         num_samples=5000, 
                         model_regressor=None,
-                        perturbation='occlusion',
+                        perturbation='zero',
                         distance_metric='eucledian',
                         patch_size=1):
         """Generates explanations for a prediction.
@@ -251,7 +251,7 @@ class LimeUTS(object):
         num_samples,
         y_true,
         patch_size=1,
-        perturbation='occlusion',
+        perturbation='zero',
         distance_metric='eucledian'
         ):
         """Generates time series and predictions in the neighborhood of this time series.

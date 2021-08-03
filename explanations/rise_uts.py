@@ -56,7 +56,7 @@ class RiseUTS:
 
     
     def explain(self, timeseries_data, y_true, model, N=200, s=8, p=.5, 
-        batch_size=100, interpolation='fourier'):
+        batch_size=100, interpolation='fourier', perturbation=None):
         _timeseries_data = np.array(timeseries_data)
         _y_true = np.array(y_true)
         

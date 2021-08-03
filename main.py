@@ -287,33 +287,35 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                 #         np.savetxt(explanations_dir + f'/occlusion_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
 
                 #### LIME
-                # print()
-                # print('--- lime ---')
-                # explainer = create_explanation('LIME')
-                # distance_metrics = ['dtw', 'euclidean', 'cosine']
-                # for distance_metric in distance_metrics:
-                #     print('Distance_metric:\t', distance_metric)
-                #     for perturbation in perturbations:
-                #         print('Perturbation:\t', perturbation)
-                #         ## samples 
-                #         patch_size_step = round(timeseries_len/50)
-                #         for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
-                #             print('Patch_size:\t', patch_size)
-                #             relevance = explainer.explain(x_test, y_true, classifier, 
-                #                 patch_size=patch_size, distance_metric=distance_metric)
-                #             np.savetxt(explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
+                print()
+                print('--- lime ---')
+                explainer = create_explanation('LIME')
+                distance_metrics = ['dtw', 'euclidean', 'cosine']
+                for distance_metric in distance_metrics:
+                    print('Distance_metric:\t', distance_metric)
+                    for perturbation in perturbations:
+                        print('Perturbation:\t', perturbation)
+                        ## samples 
+                        patch_size_step = round(timeseries_len/20)
+                        for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                            print('Patch_size:\t', patch_size)
+                            print()
+                            relevance = explainer.explain(x_test, y_true, classifier, 
+                                patch_size=patch_size, distance_metric=distance_metric)
+                            np.savetxt(explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
 
                 ## RISE TODO:
-                print()
-                print('--- rise ---')
-                explainer = create_explanation('RISE')
-                interpolations = ['linear', 'fourier']
-                for interpolation in interpolations:
-                    print('Interpolation:\t', interpolation)
-                    for batch_size in range(100, x_test.shape[0], 50):
-                        print('Batch_size:\t', batch_size)
-                        relevance = explainer.explain(x_test, y_true, classifier, interpolation=interpolation)
-                        np.savetxt(explanations_dir + f'/lime_{interpolation}_{perturbation}_batchs_{batch_size}.csv', relevance, delimiter=',')
+                # print()
+                # print('--- rise ---')
+                # explainer = create_explanation('RISE')
+                # interpolations = ['linear', 'fourier']
+                # for interpolation in interpolations:
+                #     print('Interpolation:\t', interpolation)
+                #     for batch_size in range(100, x_test.shape[0], 50):
+                #         print('Batch_size:\t', batch_size)
+                #         print()
+                #         relevance = explainer.explain(x_test, y_true, classifier, interpolation=interpolation)
+                #         np.savetxt(explanations_dir + f'/lime_{interpolation}_{perturbation}_batchs_{batch_size}.csv', relevance, delimiter=',')
 
 
 def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, evaluations, build=False, verbose=False, load=False):
