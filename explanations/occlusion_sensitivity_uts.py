@@ -24,6 +24,15 @@ class OcclusionSensitivityUTS:
         perturbation='zero'):
         _timeseries_data = np.array(timeseries_data)
         _y_true = np.array(y_true)
+
+        # print('_timeseries_data')
+        # print(_timeseries_data.shape)
+        # print(_timeseries_data[0])
+        # print()
+        # print('_y_true')
+        # print(_y_true.shape)
+        # print(_y_true[0])
+        # print()
         
         if type(_timeseries_data.tolist())!=list:
             _timeseries_data = np.array([[timeseries_data]])
@@ -61,14 +70,14 @@ class OcclusionSensitivityUTS:
 
         # if type(true_class) is not int:
             # raise Exception('True class label is not a type of integer')
-        if len(timeseries_instance) % patch_size != 0:
-            raise Exception('The patch size does not divide the time series shape')
+        # if len(timeseries_instance) % patch_size != 0:
+        #     raise Exception('The patch size does not divide the time series shape')
 
         perturbator = UTSPerturbations()
 
         # print('timeseries_instance')
-        # print(timeseries_instance)
         # print(timeseries_instance.shape)
+        # print(timeseries_instance[0])
 
         # generate perturbed time series
         perturbed_timeseries = np.array([ 
@@ -80,11 +89,14 @@ class OcclusionSensitivityUTS:
         # print('perturbed_timeseries')
         # print(perturbed_timeseries.shape)
         # print(perturbed_timeseries[0])
+
+        # print('true_class')
+        # print(true_class.shape)
+        # print(true_class)
         # predict perturbed time series
         predictions = model.predict_input(perturbed_timeseries, true_class)
 
-        # print(true_class)
-        # print(predictions[0])
+        
 
         # extract predictions of time series based on true class
         target_class_predictions = [
