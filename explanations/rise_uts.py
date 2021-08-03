@@ -56,7 +56,7 @@ class RiseUTS:
 
     
     def explain(self, timeseries_data, y_true, model, N=200, s=8, p=.5, 
-        batch_size=100, interpolation='fourier', perturbation=None):
+        batch_size=100, interpolation='linear'):
         _timeseries_data = np.array(timeseries_data)
         _y_true = np.array(y_true)
         
@@ -81,7 +81,7 @@ class RiseUTS:
 
 
     def explain_instance(self, timeseries_instance, y_true, model,
-            N=200, s=8, p=.5, batch_size=100, interpolation='fourier'):
+            N=200, s=8, p=.5, batch_size=100, interpolation='linear'):
         """Explains instance
 
         Default values of N, s and p are hyperparameters.
@@ -176,13 +176,13 @@ class RiseUTS:
             # is the size of the cell in the upsampled mask
 
             # Upsampling Cropping
-            masks[i, :] = self._interpolate(grid[i], up_size, interpolation_method=interpolation)[x:(x+len_ts)]
+            masks[i, :] = self._interpolate(grid[i], up_size, interpolation)[x:(x+len_ts)]
             
         # print() 
         return masks
 
 
-    def _interpolate(self, array1d, out_shape, interpolation_method='fourier'):
+    def _interpolate(self, array1d, out_shape, interpolation_method):
         if interpolation_method == 'linear':
             factor = len(array1d) / out_shape
             n = int(np.ceil(len(array1d) / factor))
