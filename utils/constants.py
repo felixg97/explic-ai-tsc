@@ -55,7 +55,7 @@ UNIVARIATE_DATASET_NAMES_2018 = ['ACSF1', 'Adiac', 'AllGestureWiimoteX', 'AllGes
                                 'Wafer', 'Wine', 'WordSynonyms', 'Worms', 'WormsTwoClass', 'Yoga']
 
 
-ITERATIONS = 2 # nb of random runs for random initializations
+ITERATIONS = 1 # TODO: (2, 3) # nb of random runs for random initializations
 
 ARCHIVE_NAMES = ['UCRArchive_2018']
 
@@ -162,11 +162,11 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 DATASETS_NAMES = [
-    'BeetleFly', 
+    'BeetleFly', # wird von rise immer geskipped?
     'Earthquakes',
-    'ECG5000',
-    'ElectricDevices',
-    'OSULeaf'
+    'OSULeaf',
+    # 'ECG5000', # TODO: 2  (rise bei ecg5000 batch_size 1500 gestoppt -> BeetleFly offen, wurde als lime_interpolation getagged)
+    # 'ElectricDevices' # TODO: 2
 ]
 
 ## weitere optionen: ScreenType, UWaveGestureLibraryAll, Phoneme, Lightning2, CricketY, ElectricDevices, Adiac
@@ -187,7 +187,8 @@ EXPLANATIONS = [
     'RISE',
     # 'Anchor',
     'Occlusion',
-    # 'MeaningfulPerturbation'
+    # 'MeaningfulPerturbation',
+    # 'ExtremalPerturbation'
 ]
 
 

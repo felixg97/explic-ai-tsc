@@ -290,7 +290,7 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                 print()
                 print('--- lime ---')
                 explainer = create_explanation('LIME')
-                distance_metrics = ['dtw', 'euclidean', 'cosine']
+                distance_metrics = ['dtw', 'euclidean'] #, 'cosine']
                 for distance_metric in distance_metrics:
                     print('Distance_metric:\t', distance_metric)
                     for perturbation in perturbations:
@@ -311,11 +311,14 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                 # interpolations = ['linear', 'fourier']
                 # for interpolation in interpolations:
                 #     print('Interpolation:\t', interpolation)
-                #     for batch_size in range(100, x_test.shape[0], 50):
+                #     start_batch = 50 if x_test.shape[0] > 50 else 5
+                #     end_batch = x_test.shape[0] if x_test.shape[0] > 50 else 20
+                #     batch_step = 5 if x_test.shape[0] > 50 else 1
+                #     for batch_size in range(start_batch, end_batch, batch_step):
                 #         print('Batch_size:\t', batch_size)
                 #         print()
-                #         relevance = explainer.explain(x_test, y_true, classifier, interpolation=interpolation)
-                #         np.savetxt(explanations_dir + f'/lime_{interpolation}_{perturbation}_batchs_{batch_size}.csv', relevance, delimiter=',')
+                #         relevance = explainer.explain(x_test, y_true, classifier, batch_size=batch_size, interpolation=interpolation)
+                #         np.savetxt(explanations_dir + f'/rise_{interpolation}_batchs_{batch_size}.csv', relevance, delimiter=',')
 
 
 def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, evaluations, build=False, verbose=False, load=False):
