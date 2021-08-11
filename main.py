@@ -312,7 +312,7 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                                     patch_size=patch_size, distance_metric=distance_metric)
                                 np.savetxt(explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
                 else:
-                    c
+                    pass
 
                 ## RISE TODO:
                 print()
