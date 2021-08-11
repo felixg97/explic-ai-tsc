@@ -1,5 +1,6 @@
 import os
 from time import time
+import pandas as pd
 import numpy as np
 import sys
 import sklearn
@@ -222,6 +223,7 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
 
     # print(dataset_dict.keys())
+    
 
     for classifier_name in classifiers:
         # print('Classifier:\t', classifier_name)
@@ -254,6 +256,7 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
 
+
     for classifier_name in classifiers:
         print('Classifier:\t', classifier_name)
 
@@ -276,59 +279,73 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                 perturbations = ['zero', 'mean']
 
                 #### Occlusion
-                # print('--- occlusion ---')
-                # explainer = create_explanation('Occlusion')
-                # for perturbation in perturbations:
-                #     print('Perturbation:\t', perturbation)
-                #     patch_size_step = round(timeseries_len/20)
-                #     for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
-                #         print('Patch_size:\t', patch_size)
-                #         relevance = explainer.explain(x_test, y_true, classifier, patch_size=patch_size)
-                #         np.savetxt(explanations_dir + f'/occlusion_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
+                print('--- occlusion ---')
+                if 'Occlusion' in EXPLANATIONS:
+                    explainer = create_explanation('Occlusion')
+                    for perturbation in perturbations:
+                        print('Perturbation:\t', perturbation)
+                        patch_size_step = round(timeseries_len/20)
+                        for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                            print('Patch_size:\t', patch_size)
+                            relevance = explainer.explain(x_test, y_true, classifier, patch_size=patch_size)
+                            np.savetxt(explanations_dir + f'/occlusion_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
+                else:
+                    print('Occlusion not done')
 
                 #### LIME
                 print()
                 print('--- lime ---')
-                explainer = create_explanation('LIME')
-                distance_metrics = ['dtw', 'euclidean'] #, 'cosine']
-                for distance_metric in distance_metrics:
-                    print('Distance_metric:\t', distance_metric)
-                    for perturbation in perturbations:
-                        print('Perturbation:\t', perturbation)
-                        ## samples 
-                        patch_size_step = round(timeseries_len/20)
-                        for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
-                            print('Patch_size:\t', patch_size)
-                            print()
-                            relevance = explainer.explain(x_test, y_true, classifier, 
-                                patch_size=patch_size, distance_metric=distance_metric)
-                            np.savetxt(explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
+                if 'LIME' in EXPLANATIONS:
+                    explainer = create_explanation('LIME')
+                    distance_metrics = ['dtw', 'euclidean'] #, 'cosine']
+                    for distance_metric in distance_metrics:
+                        print('Distance_metric:\t', distance_metric)
+                        for perturbation in perturbations:
+                            print('Perturbation:\t', perturbation)
+                            ## samples 
+                            patch_size_step = round(timeseries_len/20)
+                            for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                                print('Patch_size step:\t', patch_size_step)
+                                print('Patch_size:\t', patch_size)
+                                print()
+                                relevance = explainer.explain(x_test, y_true, classifier, labels=y_true,
+                                    patch_size=patch_size, distance_metric=distance_metric)
+                                np.savetxt(explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv', relevance, delimiter=',')
+                else:
+                    c
 
                 ## RISE TODO:
-                # print()
-                # print('--- rise ---')
-                # explainer = create_explanation('RISE')
-                # interpolations = ['linear', 'fourier']
-                # for interpolation in interpolations:
-                #     print('Interpolation:\t', interpolation)
-                #     start_batch = 50 if x_test.shape[0] > 50 else 5
-                #     end_batch = x_test.shape[0] if x_test.shape[0] > 50 else 20
-                #     batch_step = 5 if x_test.shape[0] > 50 else 1
-                #     for batch_size in range(start_batch, end_batch, batch_step):
-                #         print('Batch_size:\t', batch_size)
-                #         print()
-                #         relevance = explainer.explain(x_test, y_true, classifier, batch_size=batch_size, interpolation=interpolation)
-                #         np.savetxt(explanations_dir + f'/rise_{interpolation}_batchs_{batch_size}.csv', relevance, delimiter=',')
+                print()
+                print('--- rise ---')
+                if 'RISE' in EXPLANATIONS:
+                    explainer = create_explanation('RISE')
+                    interpolations = ['linear', 'fourier']
+                    for interpolation in interpolations:
+                        print('Interpolation:\t', interpolation)
+                        start_batch = 50 if x_test.shape[0] > 50 else 5
+                        end_batch = x_test.shape[0] if x_test.shape[0] > 50 else 20
+                        batch_step = 5 if x_test.shape[0] > 50 else 1
+                        for batch_size in range(start_batch, end_batch, batch_step):
+                            print('Batch_size:\t', batch_size)
+                            print()
+                            relevance = explainer.explain(x_test, y_true, classifier, batch_size=batch_size, interpolation=interpolation)
+                            np.savetxt(explanations_dir + f'/rise_{interpolation}_batchs_{batch_size}.csv', relevance, delimiter=',')
+                else:
+                    print('RISE not done')
+
 
 
 def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, evaluations, build=False, verbose=False, load=False):
+    from evaluations import PerturbationAnalysisUTS
 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
+
+
 
     for classifier_name in classifiers:
         print('Classifier:\t', classifier_name)
 
-        for iteration in iterations:
+        for iteration in range(iterations):
             print('Iteration:\t', iteration)
 
             for dataset_name in datasets:
@@ -336,21 +353,133 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
 
                 x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[dataset_name])
 
+                output_directory = f'{root_dir}/results/{classifier_name}/UCRArchive_2018_itr_{iteration}/{dataset_name}/'
+                classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory, build=False)
+
+                test_accuracy = pd.read_csv(output_directory + '_df_best_model.csv', header = None).to_numpy()[1][2]
+
+                print('Model tested accuracy:\t', test_accuracy)
+
+                explanations_dir = output_directory + 'explanations'
+                evaluations_dir = output_directory + 'evaluations'
+                create_directory(evaluations_dir)
+
+                evaluator = PerturbationAnalysisUTS()
+                evaluation_thresholds = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50]
+                # evaluation_thresholds = [95]
+
+                timeseries_len = round(x_train.shape[1] / 4)
+
+                perturbations = ['zero', 'mean']
                 #### Occlusion
                 print('--- occlusion ---')
+                if 'Occlusion' in EXPLANATIONS:
+                    for perturbation in perturbations:
+                        print('Perturbation:\t', perturbation)
+                        patch_size_step = round(timeseries_len/20)
+                        for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                            print('Patch_size:\t', patch_size)
+                            file = explanations_dir + f'/occlusion_{perturbation}_ps_{patch_size}.csv'
+                            data = pd.read_csv(file, header = None).to_numpy()
+                            print(data)
+
+                            evaluations = []
+                            
+                            for threshold in evaluation_thresholds:
+                                print('Threshold:\t', threshold)
+                                evaluation = evaluator.evaluate_relevance_vectors_for_explanation_set(
+                                    test_accuracy, x_test, y_true, x_train, y_train,
+                                    y_test, classifier, data, threshold=threshold,
+                                    # sequence_length=patch_size
+                                )
+                                evaluations.append(evaluation)
+
+                            print()
+                            df_evals = pd.DataFrame.from_records([eval_dict for eval_dict in evaluations])
+                            print(df_evals)
+                            new_dir = evaluations_dir + f'/occlusion_{perturbation}_ps_{patch_size}_eval.csv'
+                            print(new_dir)
+                            df_evals.to_csv(new_dir, sep=',', encoding='utf-8')
+                else:
+                    print('No Occlusion done')
 
 
                 ### LIME
                 print()
                 print('--- lime ---')
+                if 'LIME' in EXPLANATIONS:
+                    explainer = create_explanation('LIME')
+                    distance_metrics = ['dtw', 'euclidean'] #, 'cosine']
+                    for distance_metric in distance_metrics:
+                        print('Distance_metric:\t', distance_metric)
+                        for perturbation in perturbations:
+                            print('Perturbation:\t', perturbation)
+                            ## samples 
+                            patch_size_step = round(timeseries_len/20)
+                            for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                                print('Patch_size:\t', patch_size)
+                                file = explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv'
+                                data = pd.read_csv(file, header = None).to_numpy()
+                                print(data)
 
+                                evaluations = []
+                                
+                                for threshold in evaluation_thresholds:
+                                    print('Threshold:\t', threshold)
+                                    evaluation = evaluator.evaluate_relevance_vectors_for_explanation_set(
+                                        test_accuracy, x_test, y_true, x_train, y_train,
+                                        y_test, classifier, data, threshold=threshold,
+                                        # sequence_length=patch_size
+                                    )
+                                    evaluations.append(evaluation)
+
+                                print()
+                                df_evals = pd.DataFrame.from_records([eval_dict for eval_dict in evaluations])
+                                print(df_evals)
+                                new_dir = evaluations_dir + f'/{classifier_name}_lime_{distance_metric}_{perturbation}_ps_{patch_size}_eval.csv'
+                                print(new_dir)
+                                df_evals.to_csv(new_dir, sep=',', encoding='utf-8')
+                else:
+                    print('No LIME done')
 
                 ### RISE
                 print()
                 print('--- rise ---')
+                if 'RISE' in EXPLANATIONS:
+                    explainer = create_explanation('RISE')
+                    interpolations = ['linear', 'fourier']
+                    for interpolation in interpolations:
+                        print('Interpolation:\t', interpolation)
+                        start_batch = 50 if x_test.shape[0] > 50 else 5
+                        end_batch = x_test.shape[0] if x_test.shape[0] > 50 else 20
+                        batch_step = 5 if x_test.shape[0] > 50 else 1
+                        for batch_size in range(start_batch, end_batch, batch_step):
+                            print('Batch_size:\t', batch_size)
+                            print()
+                            file = explanations_dir +  f'/rise_{interpolation}_batchs_{batch_size}.csv'
+                            data = pd.read_csv(file, header = None).to_numpy()
+                            print(data)
 
+                            evaluations = []
+                            
+                            for threshold in evaluation_thresholds:
+                                print('Threshold:\t', threshold)
+                                evaluation = evaluator.evaluate_relevance_vectors_for_explanation_set(
+                                    test_accuracy, x_test, y_true, x_train, y_train,
+                                    y_test, classifier, data, threshold=threshold,
+                                    # sequence_length=patch_size
+                                )
+                                evaluations.append(evaluation)
 
-    pass
+                            print()
+                            df_evals = pd.DataFrame.from_records([eval_dict for eval_dict in evaluations])
+                            print(df_evals)
+                            new_dir = evaluations_dir + f'/rise_{interpolation}_batchs_{batch_size}_eval.csv'
+                            print(new_dir)
+                            df_evals.to_csv(new_dir, sep=',', encoding='utf-8')
+                else:
+                    print('No RISE done')
+
 
 
 ##################################### MAIN #####################################
@@ -386,6 +515,7 @@ print('Rebuild classifier: \t\t', rebuild)
 print('Generate plots for explanation: \t\t', generate_plots) 
 print('-----------------------------------------------------------------------')
 
+
 ## sys.argv management
 if command == 'help':
     print(HELP_INFO)
@@ -395,7 +525,7 @@ elif command == 'run_classifier':
     run_classifiers(root_directory, classifiers, iterations, datasets, verbose=verbose, load=load)
 elif command == 'run_explanations':
     run_explanations(root_directory, classifiers, iterations, datasets, explanations, verbose=verbose, load=load, build=rebuild)
-elif command == 'run_evaluation':
+elif command == 'run_evaluations':
     run_evaluations(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load, build=rebuild)
 
 

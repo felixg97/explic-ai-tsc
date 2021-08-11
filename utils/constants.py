@@ -112,7 +112,7 @@ themes_colors = {'IMAGE': 'red', 'SENSOR': 'blue', 'ECG': 'green',
 ################################### ArgParse ###################################
 
 HELP_INFO = """
-commands: help, run_complete, run_classifier, run_explanations, run_evaluation
+commands: help, run_complete, run_classifier, run_explanations, run_evaluations
 
 argugments:
 -data, -d {dataset: default=all, optional}
@@ -129,7 +129,7 @@ configurations:
 --generate_plots
 """
 
-COMMANDS = ['help', 'run_complete', 'run_classifier', 'run_explanations', 'run_evaluation']
+COMMANDS = ['help', 'run_complete', 'run_classifier', 'run_explanations', 'run_evaluations']
 
 ARGUMENTS = [
     '-data', '-d', '-classifier', '-c', '-iterations', '-i', '-explanation', 
@@ -162,8 +162,8 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 DATASETS_NAMES = [
-    'BeetleFly', # wird von rise immer geskipped?
-    'Earthquakes',
+    # 'BeetleFly', # wird von rise immer geskipped?
+    # 'Earthquakes',
     'OSULeaf',
     # 'ECG5000', # TODO: 2  (rise bei ecg5000 batch_size 1500 gestoppt -> BeetleFly offen, wurde als lime_interpolation getagged)
     # 'ElectricDevices' # TODO: 2
@@ -173,8 +173,8 @@ DATASETS_NAMES = [
 
 ################################## Classifiers #################################
 CLASSIFIERS = [
-    'MLP', # TODO: (1)
-    'ResNet', # TODO: (2)
+    # 'MLP', # TODO: (1)
+    # 'ResNet', # TODO: (2)
     # 'FCN', # TODO: i guess (3.2)
     'InceptionTime' # TODO: i guess (3.1)
     #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
@@ -194,7 +194,7 @@ EXPLANATIONS = [
 
 ################################## Evaluations #################################
 EVALUATIONS = [
-    'SanityCheck', 
+    # 'SanityCheck', 
     'PerturbationAnalysis'
 ]
 

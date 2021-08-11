@@ -62,7 +62,7 @@ root_directory = 'D:/git/explic-ai-tsc'
 
 dataset_dict = read_all_datasets(root_directory, 'UCRArchive_2018')
 
-curr_dataset = 'ECG5000'
+curr_dataset = 'BeetleFly'
 
 x_train, y_train, x_test, y_test, y_true, nb_classes, input_shape = shape_data(dataset_dict[curr_dataset])
 
@@ -82,11 +82,11 @@ timeseries_instance = x_test[:2]
 
 ############################ Load Pretrained Model #############################
 from classifiers import MLP
-output_directory_model = root_directory + '/results/MLP/UCRArchive_2018_itr_0/ECG5000/'
+output_directory_model = root_directory + f'/results/MLP/UCRArchive_2018_itr_0/{curr_dataset}/'
 model = MLP(output_directory_model, input_shape, nb_classes, verbose=True, build=False)
 
 ## Load model base accuracy (test accuracy)
-output_directory_model_results = root_directory + '/results/MLP/UCRArchive_2018_itr_0/ECG5000/_df_metrics.csv'
+output_directory_model_results = root_directory + f'/results/MLP/UCRArchive_2018_itr_0/{curr_dataset}/_df_metrics.csv'
 test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', skip_header=1)[1]
 
 # print('test_accuracy')
@@ -125,7 +125,7 @@ explained_ts = explainer.explain_instance(x_test[0], y_true[0], model)
 # explained_ts = explainer.explain(x_test[:2], y_true[:2], model)
 
 ############################ Perturbation Analysis #############################
-# evaluator = PerturbationAnalysisUTS()
+evaluator = PerturbationAnalysisUTS()
 
 print()
 print('explained_ts')

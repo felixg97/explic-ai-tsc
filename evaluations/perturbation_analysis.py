@@ -101,6 +101,7 @@ Perturbation Analyis proposed by schlegel2019
 #
 #
 # Average changed accuracy
+from os import terminal_size
 import numpy as np
 import time
 
@@ -118,6 +119,135 @@ class PerturbationAnalysisUTS:
 
     def __init__(self):
         self.perturbator = UTSPerturbations()
+
+    def evaluate_relevance_vectors_for_explanation_set(self, test_accuracy, x_test, 
+        y_true, x_train, y_train, y_test, classification_model, relevance_vectors,
+        batch_size=0, quality_metric='acc', threshold=90, sequence_length=1, 
+        verification_method='all'):
+
+        evaluation = { }
+
+        batch_size = (relevance_vectors.shape[0] + 1)
+
+        # measure time
+        start_time = time.time()
+
+        # time point evaluations
+        eval_zero_tp = None
+        eval_inverse_tp = None
+        eval_mean_tp = None 
+
+        # sequence evaluation
+        eval_swap_sq = None
+        eval_zero_sq = None
+        eval_inverse_sq = None
+        eval_mean_sq = None
+
+        batch_size_in = 0
+        if batch_size > 0:
+            batch_size_in = batch_size
+        elif batch_size == 0:
+            batch_size_in = x_test.shape[0]
+
+        evaluation['verification'] = verification_method
+        evaluation['quality_metric'] = quality_metric
+        evaluation['batch'] = batch_size_in
+        evaluation['threshold'] = threshold
+        evaluation['sequence_length'] = sequence_length
+
+        _x_test = None
+        _y_true = None
+        _x_train = None
+        _y_train = None
+        _y_test = None
+        if batch_size != x_test.shape[0]:
+            _x_test = np.array(x_test[:batch_size].copy())
+            _y_true = np.array(y_true[:batch_size].copy())
+            _x_train = np.array(x_train[:batch_size].copy())
+            _y_train = np.array(y_train[:batch_size].copy())
+            _y_test = np.array(y_test[:batch_size].copy())
+        else:
+            _x_test = np.array(x_test.copy())
+            _y_true = np.array(y_true.copy())
+            _x_train = np.array(x_train.copy())
+            _y_train = np.array(y_train.copy())
+            _y_test = np.array(y_test.copy())
+
+        # NOTE: workaround 
+        xai_model = None
+
+        if verification_method == 'zero_timepoint':
+            eval_zero_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion', xai_model_true=False, relevances_in=relevance_vectors)
+        elif verification_method == 'inverse_timepoint':
+            eval_inverse_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'value_inversion', xai_model_true=False, relevances_in=relevance_vectors)
+        elif verification_method == 'mean_timepoint':
+            eval_mean_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean', xai_model_true=False, relevances_in=relevance_vectors)
+        elif verification_method == 'swap_sequence':
+            eval_swap_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'sequence_swap', sequence_length, xai_model_true=False, relevances_in=relevance_vectors)
+        elif verification_method == 'zero_sequence':
+            eval_zero_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion', sequence_length, xai_model_true=False, relevances_in=relevance_vectors)
+        elif verification_method == 'inverse_sequence':
+            pass
+            eval_inverse_sq = 0
+            # INFO: Value inversion for sequences is currently paused, See perturbations.py
+            # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
+            #     threshold, batch_size_in, 'value_inversion', sequence_length)
+        elif verification_method == 'mean_sequence':
+            eval_mean_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean', sequence_length, xai_model_true=False, relevances_in=relevance_vectors)
+        elif verification_method == 'all':
+            eval_zero_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion', xai_model_true=False, relevances_in=relevance_vectors)
+            eval_inverse_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'value_inversion', xai_model_true=False, relevances_in=relevance_vectors)
+            eval_mean_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean', xai_model_true=False, relevances_in=relevance_vectors) 
+            eval_swap_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'sequence_swap', sequence_length, xai_model_true=False, relevances_in=relevance_vectors)
+            eval_zero_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'occlusion', sequence_length, xai_model_true=False, relevances_in=relevance_vectors)
+            eval_inverse_sq = 0
+            # INFO: Value inversion for sequences is currently paused, See perturbations.py
+            # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
+            #     threshold, batch_size_in, 'value_inversion', sequence_length)
+            eval_mean_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+                _y_train, _y_test, classification_model, xai_model, quality_metric, 
+                threshold, batch_size_in, 'total_mean', sequence_length, xai_model_true=False, relevances_in=relevance_vectors)
+
+        #
+        #
+        # 
+        #
+        evaluation['threshold'] = threshold 
+        evaluation['zero_timepoint'] = eval_zero_tp
+        evaluation['inverse_timepoint'] = eval_inverse_tp
+        evaluation['mean_timepoint'] = eval_mean_tp
+        evaluation['swap_sequence'] = eval_swap_sq
+        evaluation['zero_sequence'] = eval_zero_sq
+        evaluation['inverse_sequence'] = eval_inverse_sq
+        evaluation['swap_sequence'] = eval_swap_sq
+        evaluation['duration']=time.time()-start_time
+
+        return evaluation
+
 
 
     def evaluate_xai_method(self, test_accuracy, x_test, y_true, x_train, y_train, 
@@ -197,6 +327,7 @@ class PerturbationAnalysisUTS:
                 threshold, batch_size_in, 'occlusion', sequence_length)
         elif verification_method == 'inverse_sequence':
             pass
+            eval_inverse_sq = 0
             # INFO: Value inversion for sequences is currently paused, See perturbations.py
             # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
             #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
@@ -221,6 +352,7 @@ class PerturbationAnalysisUTS:
             eval_zero_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'occlusion', sequence_length)
+            eval_inverse_sq = 0
             # INFO: Value inversion for sequences is currently paused, See perturbations.py
             # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
             #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
@@ -243,14 +375,18 @@ class PerturbationAnalysisUTS:
 
     def _evaluate_timepoint(self, test_accuracy, x_test, y_true, x_train, y_train, y_test,
         classification_model, xai_model, quality_metric, threshold, batch_size, 
-        perturbation_method):
+        perturbation_method, xai_model_true=True, relevances_in=None):
 
 
         # Calculate relevance of every time series # TOOD: integrate batch explaining
-        relevances = np.array([
-            xai_model.explain_instance(x_test[idx], y_true[idx], classification_model) # TODO: perturbation für occlusion -> auf andere anpassen
-            for idx in range(batch_size)
-        ])
+        if xai_model_true:
+            relevances = np.array([
+                xai_model.explain_instance(x_test[idx], y_true[idx], classification_model) # TODO: perturbation für occlusion -> auf andere anpassen
+                for idx in range(batch_size)
+            ])
+        else:
+            relevances = relevances_in
+
 
         # Determine time points > threshold e for every time series 
         eth_percentile = np.array([
@@ -263,6 +399,11 @@ class PerturbationAnalysisUTS:
             [True if (jdx >= eth_percentile[idx]) else False for jdx in relevances[idx]]
             for idx in range(relevances.shape[0])
         ])
+
+        # print('FAAAK MEEE')
+        # print(relevances.shape)
+        # print(x_test)
+        # return
 
         # Perturb time series based on their value > threshold e
         perturbed_ts = []
@@ -297,17 +438,20 @@ class PerturbationAnalysisUTS:
 
     def _evaluate_sequence(self, test_accuracy, x_test, y_true, x_train, y_train, y_test,
         classification_model, xai_model, quality_metric, threshold, batch_size, 
-        perturbation_method, sequence_length):
+        perturbation_method, sequence_length, xai_model_true=True, relevances_in=None):
 
         # TODO: idee = sequence_length = stride width
         if sequence_length == 1:
             return 0
 
         # Calculate relevance of every time series # TOOD: integrate batch explaining
-        relevances = np.array([
-            xai_model.explain_instance(x_test[idx], y_true[idx], classification_model)
-            for idx in range(batch_size)
-        ])
+        if xai_model_true:
+            relevances = np.array([
+                xai_model.explain_instance(x_test[idx], y_true[idx], classification_model) # TODO: perturbation für occlusion -> auf andere anpassen
+                for idx in range(batch_size)
+            ])
+        else:
+            relevances = relevances_in
 
         # Determine time points > threshold e for every time series 
         eth_percentile = np.array([
