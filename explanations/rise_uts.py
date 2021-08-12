@@ -116,12 +116,6 @@ class RiseUTS:
             saliency[y_true]
         saliency = np.array(saliency[y_true])
 
-        # print('y_true')
-        # print(y_true)
-        # print()
-        # print('saliency')
-        # print(saliency.shape)
-        # print(saliency)
         return saliency
 
     def _generate_masks(self, timeseries_instance, N, s, p, interpolation):
@@ -136,38 +130,14 @@ class RiseUTS:
         cell_size = np.ceil(np.array(len_ts) / s)
         up_size = (s + 1) * cell_size       
         up_size = int(up_size)
-
-        # print('Y0')
-        # print(np.array(len_ts))
-        # print(np.array(len_ts) / s)
-        # print()
-
-        # print('cell size: ', cell_size)
-        # print()
     
         grid = np.random.rand(N, s) < p # produces random binary map M (bool)
         grid = grid.astype('float32') # bool to float
 
         masks = np.empty((N, *[len_ts]))
 
-        # print('grid')
-        # print(grid.shape)
-        # print(grid[0])
-
-        # print('Masks')
-        # print(masks.shape)
-        # print(masks)
-        # print()
-        # print()
-        # print('##################################################################')
-
-        # print(len_ts, type(len_ts))
-        # print(up_size, type(up_size))
-        # print(up_size)
-
         # scipy.signal.resample - resample with fourier might be goo
         # here: bilinear resampling for image     
-        # print()
         for i in range(N):
             # Random shifts
             x = np.random.randint(0, cell_size)

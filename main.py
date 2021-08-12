@@ -222,14 +222,11 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
 
     dataset_dict = read_all_datasets(root_dir, 'UCRArchive_2018')
 
-    # print(dataset_dict.keys())
-    
-
     for classifier_name in classifiers:
-        # print('Classifier:\t', classifier_name)
+        print('Classifier:\t', classifier_name)
 
         for iteration in [*range(iterations)]:
-            # print('Iteration:\t', iteration)
+            print('Iteration:\t', iteration)
 
             trr = '_itr_' + str(iteration)
 
@@ -238,7 +235,7 @@ def run_classifiers(root_dir, classifiers, iterations, datasets, verbose=False, 
             # print(output_directory)
 
             for dataset_name in datasets:
-                # print('Data set:\t', dataset_name)
+                print('Data set:\t', dataset_name)
 
                 output_directory = toutput_directory + dataset_name + '/'
 
@@ -314,7 +311,7 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                 else:
                     pass
 
-                ## RISE TODO:
+                ### RISE
                 print()
                 print('--- rise ---')
                 if 'RISE' in EXPLANATIONS:
@@ -366,7 +363,6 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
 
                 evaluator = PerturbationAnalysisUTS()
                 evaluation_thresholds = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50]
-                # evaluation_thresholds = [95]
 
                 timeseries_len = round(x_train.shape[1] / 4)
 
@@ -390,7 +386,6 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                                 evaluation = evaluator.evaluate_relevance_vectors_for_explanation_set(
                                     test_accuracy, x_test, y_true, x_train, y_train,
                                     y_test, classifier, data, threshold=threshold,
-                                    # sequence_length=patch_size
                                 )
                                 evaluations.append(evaluation)
 
@@ -429,7 +424,6 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                                     evaluation = evaluator.evaluate_relevance_vectors_for_explanation_set(
                                         test_accuracy, x_test, y_true, x_train, y_train,
                                         y_test, classifier, data, threshold=threshold,
-                                        # sequence_length=patch_size
                                     )
                                     evaluations.append(evaluation)
 
@@ -467,7 +461,6 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                                 evaluation = evaluator.evaluate_relevance_vectors_for_explanation_set(
                                     test_accuracy, x_test, y_true, x_train, y_train,
                                     y_test, classifier, data, threshold=threshold,
-                                    # sequence_length=patch_size
                                 )
                                 evaluations.append(evaluation)
 
@@ -485,9 +478,9 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
 ##################################### MAIN #####################################
 
 ## For Notebook
-# root_directory = 'C:/git/explic-ai-tsc'
+root_directory = 'C:/git/explic-ai-tsc' # You need to specifiy your root here
 ## For PC
-root_directory = 'D:/git/explic-ai-tsc'
+# root_directory = 'D:/git/explic-ai-tsc'
 
 sys_argv = sys.argv[1:]
 
@@ -507,8 +500,10 @@ print()
 print('Data sets: \t', datasets)
 print('Classifier: \t', classifiers) 
 print('Iterations: \t', iterations)
-print('Explanations: \t',explanations)
-print('Evaluations: \t', evaluations) 
+if command == 'run_complete' or command == 'run_explanations': 
+    print('Explanations: \t',explanations)
+if command == 'run_complete' or command == 'run_evaluations': 
+    print('Evaluations: \t', evaluations) 
 print('Verbose: \t', verbose) 
 print('Load: \t\t', load) 
 print('Rebuild classifier: \t\t', rebuild) 
@@ -528,17 +523,3 @@ elif command == 'run_explanations':
 elif command == 'run_evaluations':
     run_evaluations(root_directory, classifiers, iterations, datasets, explanations, evaluations, verbose=verbose, load=load, build=rebuild)
 
-
-
-# Tests
-# cls && python main.py run_explanations -c MLP -d ECG5000 -ex Occlusion -i 1 -ev PerturbationAnalysis
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
