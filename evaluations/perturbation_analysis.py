@@ -378,7 +378,7 @@ class PerturbationAnalysisUTS:
         perturbation_method, xai_model_true=True, relevances_in=None):
 
 
-        # Calculate relevance of every time series # TOOD: integrate batch explaining
+        # Calculate relevance of every time series if relevances are not present
         if xai_model_true:
             relevances = np.array([
                 xai_model.explain_instance(x_test[idx], y_true[idx], classification_model) # TODO: perturbation für occlusion -> auf andere anpassen
@@ -394,16 +394,12 @@ class PerturbationAnalysisUTS:
             for relevance in relevances
         ])
 
-        # Assign true values to indices overshooting the eth_percentile
+        # Assign True to indices overshooting the eth_percentile False otherwise
         reltps_over_threshoold = np.array([
             [True if (jdx >= eth_percentile[idx]) else False for jdx in relevances[idx]]
             for idx in range(relevances.shape[0])
         ])
 
-        # print('FAAAK MEEE')
-        # print(relevances.shape)
-        # print(x_test)
-        # return
 
         # Perturb time series based on their value > threshold e
         perturbed_ts = []
@@ -420,13 +416,6 @@ class PerturbationAnalysisUTS:
             perturbed_ts.append(timeseries_to_perturb)
         perturbed_ts = np.array(perturbed_ts)
 
-        # print()
-        # print(perturbation_method)
-        # print()
-        # print('perturbed_ts')
-        # print(perturbed_ts.shape)
-        # print(reltps_over_threshoold[0])
-        # print(perturbed_ts[0])
 
         # Predict perturbed time series
         metrics = classification_model.predict(perturbed_ts, y_true, x_train, y_train, y_test)
