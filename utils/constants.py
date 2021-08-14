@@ -162,10 +162,10 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 DATASETS_NAMES = [
-    # 'BeetleFly', # wird von rise immer geskipped?
-    # 'Earthquakes',
-    # 'OSULeaf',
-    'ECG5000', # TODO: 2  (rise bei ecg5000 batch_size 1500 gestoppt -> BeetleFly offen, wurde als lime_interpolation getagged)
+    'BeetleFly', # wird von rise immer geskipped?
+    'Earthquakes',
+    'OSULeaf', # TODO: IT LAST
+    # 'ECG5000', # TODO: 2  (rise bei ecg5000 batch_size 1500 gestoppt -> BeetleFly offen, wurde als lime_interpolation getagged)
     # 'ElectricDevices' # TODO: 2
 ]
 
@@ -174,9 +174,9 @@ DATASETS_NAMES = [
 ################################## Classifiers #################################
 CLASSIFIERS = [
     'MLP', # TODO: (1)
-    # 'ResNet', # TODO: (2)
+    'ResNet', # TODO: (2)
     # 'FCN', # TODO: i guess (3.2)
-    # 'InceptionTime' # TODO: i guess (3.1)
+    # 'InceptionTime' # TODO: i guess (3.1) # TODO: IT LAST
     #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
 ]
 
@@ -186,7 +186,7 @@ EXPLANATIONS = [
     'LIME',
     'RISE',
     # 'Anchor',
-    # 'Occlusion',
+    'Occlusion',
     # 'MeaningfulPerturbation',
     # 'ExtremalPerturbation'
 ]

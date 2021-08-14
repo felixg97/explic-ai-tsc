@@ -78,7 +78,8 @@ print('y_test')
 print(y_test.shape)
 # print(y_test)
 
-timeseries_instance = x_test[:2]
+timeseries_instance = x_test[0]
+true_class = y_true[0]
 
 ############################ Load Pretrained Model #############################
 from classifiers import MLP
@@ -97,9 +98,9 @@ test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', ski
 # print(metrics)
 
 ################################## Occlusion ###################################
-# explainer = OcclusionSensitivityUTS()
+explainer = OcclusionSensitivityUTS()
 
-# relevance = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
+relevance = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 #################################### LIME ######################################
 # explainer = LimeUTS()
 # explainer = LimeTimeSeriesExplainer()
@@ -119,9 +120,9 @@ test_accuracy = np.genfromtxt(output_directory_model_results, delimiter=',', ski
 
 # explained_ts = explainer.explain_instance(timeseries_instance, true_class=1, model=model, patch_size=4)
 ########################### Meaningful Perturbation ############################
-explainer = MeaningfulPerturbationUTS()
+# explainer = MeaningfulPerturbationUTS()
 
-explained_ts = explainer.explain_instance(x_test[0], y_true[0], model)
+# explained_ts = explainer.explain_instance(x_test[0], y_true[0], model)
 # explained_ts = explainer.explain(x_test[:2], y_true[:2], model)
 
 ############################ Perturbation Analysis #############################

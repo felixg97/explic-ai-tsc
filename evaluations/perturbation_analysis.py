@@ -265,15 +265,22 @@ class PerturbationAnalysisUTS:
         start_time = time.time()
 
         # time point evaluations
-        eval_zero_tp = None
-        eval_inverse_tp = None
-        eval_mean_tp = None 
+        eval_zero_tp_sys = None
+        eval_zero_tp_ran = None
+        eval_inverse_tp_sys = None
+        eval_inverse_tp_ran = None
+        eval_mean_tp_sys = None 
+        eval_mean_tp_ran = None 
 
         # sequence evaluation
-        eval_swap_sq = None
-        eval_zero_sq = None
-        eval_inverse_sq = None
-        eval_mean_sq = None
+        eval_swap_sq_sys = None
+        eval_swap_sq_ran = None
+        eval_zero_sq_sys = None
+        eval_zero_sq_ran = None
+        eval_inverse_sq_sys = None
+        eval_inverse_sq_ran = None
+        eval_mean_sq_sys = None
+        eval_mean_sq_ran = None
 
         batch_size_in = 0
         if batch_size > 0:
@@ -306,7 +313,7 @@ class PerturbationAnalysisUTS:
             _y_test = np.array(y_test.copy())
 
         if verification_method == 'zero_timepoint':
-            eval_zero_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_zero_tp_sys, eval_zero_tp_ran = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'occlusion')
         elif verification_method == 'inverse_timepoint':
@@ -337,38 +344,45 @@ class PerturbationAnalysisUTS:
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'total_mean', sequence_length)
         elif verification_method == 'all':
-            eval_zero_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_zero_tp_sys, eval_zero_tp_ran = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'occlusion')
-            eval_inverse_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_inverse_tp_sys, eval_inverse_tp_ran = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'value_inversion')
-            eval_mean_tp = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_mean_tp_sys, eval_mean_tp_ran = self._evaluate_timepoint(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'total_mean') 
-            eval_swap_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_swap_sq_sys, eval_swap_sq_ran = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'sequence_swap', sequence_length)
-            eval_zero_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_zero_sq_sys, eval_zero_sq_rand = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'occlusion', sequence_length)
             eval_inverse_sq = 0
             # INFO: Value inversion for sequences is currently paused, See perturbations.py
-            # eval_inverse_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            # eval_inverse_sq_sys, eval_inverse_sq_ran = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
             #     _y_train, _y_test, classification_model, xai_model, quality_metric, 
             #     threshold, batch_size_in, 'value_inversion', sequence_length)
-            eval_mean_sq = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
+            eval_mean_sq_sys, eval_mean_sq_ran = self._evaluate_sequence(test_accuracy, _x_test, _y_true, _x_train, 
                 _y_train, _y_test, classification_model, xai_model, quality_metric, 
                 threshold, batch_size_in, 'total_mean', sequence_length)
             #end
 
-        evaluation['zero_timepoint'] = eval_zero_tp
-        evaluation['inverse_timepoint'] = eval_inverse_tp
-        evaluation['mean_timepoint'] = eval_mean_tp
-        evaluation['swap_sequence'] = eval_swap_sq
-        evaluation['zero_sequence'] = eval_zero_sq
-        evaluation['inverse_sequence'] = eval_inverse_sq
-        evaluation['swap_sequence'] = eval_swap_sq
+        evaluation['zero_timepoint'] = eval_zero_tp_sys
+        evaluation['zero_timepoint_random_verification'] = eval_zero_tp_ran
+        evaluation['inverse_timepoint'] = eval_inverse_tp_sys
+        evaluation['inverse_timepoint_random_verification'] = eval_inverse_tp_ran
+        evaluation['mean_timepoint'] = eval_mean_tp_sys
+        evaluation['mean_timepoint_random_verification'] = eval_mean_tp_ran
+        evaluation['swap_sequence'] = eval_swap_sq_sys
+        evaluation['swap_sequence_random_verification'] = eval_swap_sq_ran
+        evaluation['zero_sequence'] = eval_zero_sq_sys
+        evaluation['zero_sequence_random_verification'] = eval_zero_sq_ran
+        evaluation['inverse_sequence'] = eval_inverse_sq_sys
+        evaluation['inverse_sequence_random_verification'] = eval_inverse_sq_ran
+        evaluation['swap_sequence'] = eval_swap_sq_sys
+        evaluation['swap_sequence_random_verification'] = eval_swap_sq_ran
         evaluation['duration']=time.time()-start_time
 
         return evaluation
@@ -418,9 +432,10 @@ class PerturbationAnalysisUTS:
 
 
         # Predict perturbed time series
-        metrics = classification_model.predict(perturbed_ts, y_true, x_train, y_train, y_test)
-        
-        return metrics['accuracy'][0]
+        metrics_sys_perturbed = classification_model.predict(perturbed_ts, y_true, x_train, y_train, y_test)
+        metrics_rand_perturbed = classification_model.predict(perturbed_ts, y_true, x_train, y_train, y_test)
+
+        return metrics_sys_perturbed['accuracy'][0], metrics_sys_perturbed['accuracy'][0]
         #end of _evaluate_timepoint
 
 

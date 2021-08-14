@@ -376,6 +376,8 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                         for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
                             print('Patch_size:\t', patch_size)
                             file = explanations_dir + f'/occlusion_{perturbation}_ps_{patch_size}.csv'
+                            if not os.path.isfile(file):
+                                continue
                             data = pd.read_csv(file, header = None).to_numpy()
                             print(data)
 
@@ -404,7 +406,11 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                 print('--- lime ---')
                 if 'LIME' in EXPLANATIONS:
                     explainer = create_explanation('LIME')
-                    distance_metrics = ['dtw', 'euclidean'] #, 'cosine']
+                    distance_metrics = [
+                        'dtw', 
+                        'euclidean',
+                        #'cosine'
+                    ]
                     for distance_metric in distance_metrics:
                         print('Distance_metric:\t', distance_metric)
                         for perturbation in perturbations:
@@ -414,6 +420,9 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                             for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
                                 print('Patch_size:\t', patch_size)
                                 file = explanations_dir + f'/lime_{distance_metric}_{perturbation}_ps_{patch_size}.csv'
+                                if not os.path.isfile(file):
+                                    continue
+                                
                                 data = pd.read_csv(file, header = None).to_numpy()
                                 print(data)
 
@@ -441,7 +450,10 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                 print('--- rise ---')
                 if 'RISE' in EXPLANATIONS:
                     explainer = create_explanation('RISE')
-                    interpolations = ['linear', 'fourier']
+                    interpolations = [
+                        'linear', 
+                        'fourier'
+                    ]
                     for interpolation in interpolations:
                         print('Interpolation:\t', interpolation)
                         start_batch = 50 if x_test.shape[0] > 50 else 5
@@ -451,6 +463,8 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                             print('Batch_size:\t', batch_size)
                             print()
                             file = explanations_dir +  f'/rise_{interpolation}_batchs_{batch_size}.csv'
+                            if not os.path.isfile(file):
+                                    continue
                             data = pd.read_csv(file, header = None).to_numpy()
                             print(data)
 
@@ -478,9 +492,9 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
 ##################################### MAIN #####################################
 
 ## For Notebook
-root_directory = 'C:/git/explic-ai-tsc' # You need to specifiy your root here
+# root_directory = 'C:/git/explic-ai-tsc' # You need to specifiy your root here
 ## For PC
-# root_directory = 'D:/git/explic-ai-tsc'
+root_directory = 'D:/git/explic-ai-tsc'
 
 sys_argv = sys.argv[1:]
 

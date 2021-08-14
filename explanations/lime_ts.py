@@ -1,5 +1,5 @@
 """
-https://github.com/emanuel-metzenthin/Lime-For-Time/blob/master/lime_timeseries.py
+https://github.com/emanuel-metzenthin/Lime-For-Time/blob/ma ster/lime_timeseries.py
 """
 import numpy as np
 import sklearn
@@ -363,45 +363,16 @@ class LimeTimeSeriesExplainer(object):
 
         predictions = model.predict_input(np.array(original_data), y_true)
         
-        # print('perturbation_matrix')
-        # print(perturbation_matrix.shape)
-        # print(perturbation_matrix[0])
-        # print(perturbation_matrix[1])
-        # print()
-
         # create a flat representation for features
         perturbation_matrix = perturbation_matrix.reshape((num_samples, num_channels * num_slices))
 
-        # print('timeseries')
-        # print(timeseries.shape)
-        # print(timeseries)
-        # print()
-        # print('perturbation_matrix')
-        # print(perturbation_matrix.shape)
-        # print(perturbation_matrix[0])
-        # print(perturbation_matrix[1])
-        # print()
-
-        # distances_1 = [ ]
         distances = [ ]
         if distance_metric == 'cosine':
             distances = distance_cosine(perturbation_matrix)
         elif distance_metric == 'euclidean':
             distances = distance_euclidean(perturbation_matrix)
-            # distances_1 = distance_euclidean_2(perturbation_matrix)
         elif distance_metric == 'dtw':
             distances = distance_dtw(perturbation_matrix)
-
-        # print('distances_1')
-        # print(distances_1.shape)
-        # print(distances_1.tolist())
-
-        # print('distances')
-        # print(distances.shape)
-        # print(distances.tolist())
-
-        # print(distances == distances_1)
-        # print(np.array([distances == distances_1]).sum())
 
         return perturbation_matrix, predictions, distances
 
