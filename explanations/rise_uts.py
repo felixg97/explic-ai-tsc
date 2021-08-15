@@ -90,9 +90,9 @@ class RiseUTS:
             timeseries_instance: instance to be explained
             model: Model
             true_class: class to be explained
-            N: N masks
-            s: Stride size 
-            p: 
+            N: number of masks
+            s: size of the masks (before upsampling)
+            p: probability determining assignment of the values 0 and 1
         """
         # Generate masks        
         masks = self._generate_masks(timeseries_instance, N, s, p, interpolation)
@@ -109,6 +109,7 @@ class RiseUTS:
         
         predicitons = np.concatenate(predicitons)
 
+        ### 
         saliency = predicitons.T.dot(masks.reshape(N, -1)).reshape(-1, *[len_ts])
         saliency = saliency / N / p
 
@@ -122,11 +123,12 @@ class RiseUTS:
         """Randomly generates binaray masks 
         Arg:
             N: hyperparam, N masks
-            s: hyperparam, stride
+            s: hyperparam, size
             p: probability (default - random = .5)
         """
         len_ts = len(timeseries_instance)
 
+        # cell_size = np.floor(np.array(len_ts) / s)
         cell_size = np.ceil(np.array(len_ts) / s)
         up_size = (s + 1) * cell_size       
         up_size = int(up_size)
@@ -137,14 +139,13 @@ class RiseUTS:
         masks = np.empty((N, *[len_ts]))
 
         # scipy.signal.resample - resample with fourier might be goo
-        # here: bilinear resampling for image     
+        # here: resampling for image     
         for i in range(N):
             # Random shifts
             x = np.random.randint(0, cell_size)
 
-            # Upsample all masks to size (t+1)C[T] using bilinear interpolation, where C[T] = T/t
+            # Upsample all masks to size (t+1)C[T] using interpolation, where C[T] = T/t
             # is the size of the cell in the upsampled mask
-
             # Upsampling Cropping
             masks[i, :] = self._interpolate(grid[i], up_size, interpolation)[x:(x+len_ts)]
             

@@ -162,12 +162,14 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 DATASETS_NAMES = [
-    'BeetleFly', # wird von rise immer geskipped?
-    'Earthquakes',
+    # 'BeetleFly', # wird von rise immer geskipped?
+    # 'Earthquakes',
     'OSULeaf', # TODO: IT LAST
     # 'ECG5000', # TODO: 2  (rise bei ecg5000 batch_size 1500 gestoppt -> BeetleFly offen, wurde als lime_interpolation getagged)
     # 'ElectricDevices' # TODO: 2
 ]
+
+# TODO: (heute) InceptionTime lime eucledian mean osuleaf & rise alle datensätze
 
 ## weitere optionen: ScreenType, UWaveGestureLibraryAll, Phoneme, Lightning2, CricketY, ElectricDevices, Adiac
 
@@ -176,7 +178,7 @@ CLASSIFIERS = [
     'MLP', # TODO: (1)
     'ResNet', # TODO: (2)
     # 'FCN', # TODO: i guess (3.2)
-    # 'InceptionTime' # TODO: i guess (3.1) # TODO: IT LAST
+    'InceptionTime' # TODO: i guess (3.1) # TODO: IT LAST
     #'HIVE-COTE', # TODO: keine wahnung wo ich das herbekomme bisher
 ]
 
