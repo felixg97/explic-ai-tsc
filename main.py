@@ -308,6 +308,7 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                             ## samples 
                             patch_size_step = round(timeseries_len/20)
                             for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                            # for patch_size in range(20, timeseries_len, patch_size_step):
                                 print('Patch_size step:\t', patch_size_step)
                                 print('Patch_size:\t', patch_size)
                                 print()
@@ -329,8 +330,8 @@ def run_explanations(root_dir, classifiers, iterations, datasets, explanations, 
                     for interpolation in interpolations:
                         print('Interpolation:\t', interpolation)
                         patch_size_step = round(timeseries_len/20)
-                        for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
-                        # for patch_size in range(patch_size_step, 96, patch_size_step):
+                        # for patch_size in range(patch_size_step, timeseries_len, patch_size_step):
+                        for patch_size in range(60, timeseries_len, patch_size_step):
                             print('Patch_size:\t', patch_size)
                             print()
                             relevance = explainer.explain(
@@ -495,7 +496,7 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                     # explainer = create_explanation('RISE')
                     interpolations = [
                         'linear', 
-                        'fourier'
+                        # 'fourier'
                     ]
                     for interpolation in interpolations:
                         print('Interpolation:\t', interpolation)
@@ -544,7 +545,7 @@ def run_evaluations(root_dir, classifiers, iterations, datasets, explanations, e
                 ### Random
                 print()
                 print('--- random ---')
-                randy = True
+                randy = False
                 if randy:
                     patch_size_step = round(timeseries_len/20)
                     for patch_size in range(patch_size_step, timeseries_len, patch_size_step):

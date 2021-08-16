@@ -162,8 +162,8 @@ UNIVARIATE_DATASET_NAMES = [
 ]
 
 DATASETS_NAMES = [
-    # 'BeetleFly', # wird von rise immer geskipped?
-    # 'Earthquakes',
+    'BeetleFly', # wird von rise immer geskipped?
+    'Earthquakes',
     'OSULeaf', # TODO: IT LAST
     # 'ECG5000', # TODO: 2  (rise bei ecg5000 batch_size 1500 gestoppt -> BeetleFly offen, wurde als lime_interpolation getagged)
     # 'ElectricDevices' # TODO: 2

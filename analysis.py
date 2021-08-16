@@ -76,7 +76,18 @@ for classifier_name in CLASSIFIERS:
                 elif (file.find('random') != -1):
                     random_files.append(file)
 
-            evaluation_thresholds = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50]
+            evaluation_thresholds = [
+                # 95, 
+                90, 
+                # 85, 
+                # 80, 
+                # 75, 
+                # 70, 
+                # 65, 
+                # 60, 
+                # 55, 
+                # 50
+            ]
 
             # for file in occlusion_files:
             #     print(file)
@@ -98,6 +109,8 @@ for classifier_name in CLASSIFIERS:
                     # print(csv_file[0])
                     for line in csv_file[1:]:
                         nan, verification, qm, e, sl, acc_zero_tp, acc_inve_tp, base_acc, duration = line
+                        e = int(e)
+                        if e not in evaluation_thresholds: continue
                         base_acc = float(base_acc)
                         acc_zero_tp = float(acc_zero_tp)
                         acc_inve_tp = float(acc_inve_tp)
@@ -130,6 +143,8 @@ for classifier_name in CLASSIFIERS:
                     # print(csv_file[0])
                     for line in csv_file[1:]:
                         nan, verification, qm, e, sl, acc_zero_tp, acc_inve_tp, base_acc, duration = line
+                        e = int(e)
+                        if e not in evaluation_thresholds: continue
                         base_acc = float(base_acc)
                         acc_zero_tp = float(acc_zero_tp)
                         acc_inve_tp = float(acc_inve_tp)
@@ -161,6 +176,8 @@ for classifier_name in CLASSIFIERS:
                     # print(csv_file[0])
                     for line in csv_file[1:]:
                         nan, verification, qm, e, sl, acc_zero_tp, acc_inve_tp, base_acc, duration = line
+                        e = int(e)
+                        if e not in evaluation_thresholds: continue
                         base_acc = float(base_acc)
                         acc_zero_tp = float(acc_zero_tp)
                         acc_inve_tp = float(acc_inve_tp)
@@ -188,6 +205,8 @@ for classifier_name in CLASSIFIERS:
                 # print(csv_file[0])
                 for line in csv_file[1:]:
                     nan, verification, qm, e, sl, acc_zero_tp, acc_inve_tp, base_acc, duration = line
+                    e = int(e)
+                    if e not in evaluation_thresholds: continue
                     base_acc = float(base_acc)
                     acc_zero_tp = float(acc_zero_tp)
                     acc_inve_tp = float(acc_inve_tp)
@@ -214,7 +233,7 @@ my_dir = root_directory + '/results'
 
 cols_occlusion = ['classifier', 'dataset', 'perturbation', 'patch_size', 'threshold', 'acc_base', 'acc_zero_tp', 'change_zero_tp', 'acc_inverse_tp', 'change_inverse_tp']
 cols_lime = ['classifier', 'dataset', 'perturbation', 'distance_metric', 'patch_size', 'threshold', 'acc_base', 'acc_zero_tp', 'change_zero_tp', 'acc_inve_tp', 'change_inve_tp']
-cols_rise = ['classifier', 'dataset', 'interpolation', 'batch_size', 'threshold', 'acc_base', 'acc_zero_tp', 'change_zero_tp', 'acc_inve_tp', 'change_inve_tp']
+cols_rise = ['classifier', 'dataset', 'interpolation', 'batch_size', 'threshold', 'acc_base', 'acc_zero_tp', 'change_zero_tp', 'acc_inve_tp', 'change_inve_tp'] # batch_size == patch_size  in this array
 cols_random = ['classifier', 'dataset', 'patch_size', 'threshold', 'acc_base', 'acc_zero_tp', 'change_zero_tp', 'acc_inve_tp', 'change_inve_tp']
 
 
