@@ -13,69 +13,70 @@ Perturbation Analyis proposed by schlegel2019
   title = {Towards A Rigorous Evaluation Of {XAI} Methods On Time Series},
   booktitle = {2019 {IEEE}/{CVF} International Conference on Computer Vision Workshop ({ICCVW})}
 }
+
+implemented by @fg
 """
 
 # How it works
 #
-# (a) dataset D consisting of n samples with C:{c[1], ... c[k]} classes
-# (b) A sample of t of D consists of m time points t = (t[1], ..., t[m])
+# (a) dataset D consisting of n samples with Y: {c_0, ... c_k}, k different classes
 #
-# (c) The local feature importance produces a relevance r[i] for each time point
-#     t[i]. Afterward a tuple (t[i], r[i]) can be build (!). Or more general
-#     for the time series vector t a relevance vector r
+# (b) A sample t in D consists of m time points t = (t_0, ..., t_m)
+#
+# (c) The local feature importance produces a relevance r_i for each time point
+#     t_i. Afterwards a tuple (t_i, r_i) can be build. Or more general
+#     for the time series vector t a relevance vector r = (r_0, ..., r_m)
 #
 # (d) A model m trained on a subset X from D with labels Y can be formalized to
-#     m(x)=y with x element of X and y element of Y
+#     m(x)=y with x in X and y in Y
 #
-# (e) The model m learns based on the provided data X,Y to predict an unseen subset
-#     X[new].
+# (e) The model m learns based on the provided data X, Y to predict an unseen subset
+#     X_new.
 #
-# (f) In the case of time series, x is a sample like t = (t[0], ..., t[m]) with 
-#     m time points
-# 
-# (g) If then XAI method xai is incorporated to explain the decisions of such a
-#     model, another layer on top of it is created
+# (f) In the case of time series, x is a sample like t = (t_0, ..., t_m) with 
+#     m time points. If then XAI method xai is incorporated to explain the decisions of 
+#     such a model, another layer on top of it is created.
 #
-# (h) An explanation can be formalized as xai(x,m) = exp
-#
-# (i) With time series, the explanation exp is a relevance vector r = (r[0], ..., r[m])
+# (h) An explanation can be formalized as xai(x, m) = exp with exp being the resulting
+#     explanation. With time series, the explanation exp is a relevance vector 
+#     r = (r_0, ..., r_m).
 #
 #### 1 - Perturbation on time series
 #
 ## (1) Perturbation analysis
 #
-# (a) Assumed that the relevance produced by XAI method should get worse results 
-#     of the quality metric qm for the classifier if combined. (!)
+# (a) Assumption: The quality metric qm for a prediction, using model m, should decrease when 
+#                 relevant features get changed, given the relevance r, produced by xai(x, m).
 #
-# (b) A point t[i] gets changed if r[i] is larger than a certain threshold e,
-#     e.g. the 90th percentile of r (!)
+# (b) A point t_i gets changed if r_i is larger than a certain threshold e, e.g. the 90th 
+#     percentile of the distribution of the values of r.
 # 
-# (c) Due to XAI methods having problems with some time series samples, the threshold
-#     leads to only changing a small number of time points.
+# (c) Due to xai methods having problems with some time series samples, the threshold may
+#     lead to only changing a small number of time points.
 #
-# (d) In the case of time series, the point t[i] is set to zero or the inverse: (max(t[i]) - t[i])
+# (d) In the case of time series, the point t_i is set to zero or the inverse: (max_t - t_i)
 #     and leads to the new time samples t^zero and t^inverse
 #
-## (2) Perturbation verification
+## (1.1) Perturbation verification
 #
-# (a) To verify the assumption, a random relevance r[r] = (r[0], ..., r[m]) is used
+# (a) To verify the assumption, a random relevance r_r = (r_0, ..., r_m) is used
 #     for the same procedure
 #
-# (b) The number of changed time points, amount of r[i] larger than the threshold e,
+# (b) The number of changed time points, amount of r_i larger than the threshold e,
 #     is the same as in the case before to set the same prerequisits for the classifier
 #     
 # (c) This technique creates new time series like the perturbation analysis such
-#     as t^zero[r] and t^inverse[r].
+#     as t^zero_r and t^inverse_r.
 #
 # (d) The assumption to verify the model follows the schema like
-#        like qm(t) >= qm(t^zero[r]) >= qm(t^zero) or
-#        like qm(t) >= qm(t^inverse[r]) >= qm(t^inverse)
+#        like qm(t) >= qm(t^zero_r) >= qm(t^zero) or
+#        like qm(t) >= qm(t^inverse_r) >= qm(t^inverse)
 #     for a model that maximizes qm
 #
 #
 #### 2 - Sequence evaluation
 #
-## (3) Swap Time Points (inverse sub sequence)
+## (2) Swap Time Points (inverse sub sequence)
 #
 # (a) Method takes time series t, and relevance r. However, it takes the time points
 #     with the relevance over the threshold as the starting point as the starting 
@@ -92,13 +93,107 @@ Perturbation Analyis proposed by schlegel2019
 #     time points relevance again
 #
 #
-## (4) Mean Time Points (mean sub sequence)
+## (3) Mean Time Points (mean sub sequence)
 #
 # (a) Same as swap time points, but instead of swapping the time points the mean
 #     is calculated
 #     t[sub] = (t[i], ..., t[i+n[s]])
 #     mean(t[sub]) = (mean(t[sub])[i], ..., mean(t[sub])[i+n[s]])
 #
+
+
+
+# How it works
+#
+# (a) dataset D consisting of n samples with Y: {c_0, ... c_k}, k different classes
+#
+# (b) A sample t in D consists of m time points t = (t_0, ..., t_m)
+#
+# (c) The local feature importance produces a relevance r_i for each time point
+#     t_i. Afterwards a tuple (t_i, r_i) can be build. Or more general
+#     for the time series vector t a relevance vector r = (r_0, ..., r_m)
+#
+# (d) A model m trained on a subset X from D with labels Y can be formalized to
+#     m(x)=y with x in X and y in Y
+#
+# (e) The model m learns based on the provided data X, Y to predict an unseen subset
+#     X_new.
+#
+# (f) In the case of time series, x is a sample like t = (t_0, ..., t_m) with 
+#     m time points. If then XAI method xai is incorporated to explain the decisions of 
+#     such a model, another layer on top of it is created.
+#
+# (h) An explanation can be formalized as xai(x, m) = exp with exp being the resulting
+#     explanation. With time series, the explanation exp is a relevance vector 
+#     r = (r_0, ..., r_m).
+#
+#### 1 - Perturbation on time series
+#
+## (1) Perturbation analysis
+#
+# (a) Assumption: The quality metric qm for a prediction, using model m, should decrease when 
+#                 relevant features get changed, given the relevance r, produced by xai(x, m).
+#
+# (b) A point t_i gets changed if r_i is larger than a certain threshold e, e.g. the 90th 
+#     percentile of the distribution of the values of r.
+# 
+# (c) Due to xai methods having problems with some time series samples, the threshold may
+#     lead to only changing a small number of time points.
+#
+# (d) In the case of time series, the point t_i is set to zero or the inverse: (max_t - t_i)
+#     and leads to the new time samples t^zero and t^inverse
+#
+## (1.1) Perturbation verification
+#
+# (a) To verify the assumption, a random relevance r_r = (r_0, ..., r_m) is used
+#     for the same procedure
+#
+# (b) The number of changed time points, amount of r_i larger than the threshold e,
+#     is the same as in the case before to set the same prerequisits for the classifier
+#     
+# (c) This technique creates new time series like the perturbation analysis such
+#     as t^zero_r and t^inverse_r.
+#
+# (d) The assumption to verify the model follows the schema like
+#        like qm(t) >= qm(t^zero_r) >= qm(t^zero) or
+#        like qm(t) >= qm(t^inverse_r) >= qm(t^inverse)
+#     for a model that maximizes qm
+#
+#
+#### 2 - Sequence evaluation
+#
+## (2) Swap Time Points (inverse sub sequence)
+#
+# (a) Method takes time series t, and relevance r. However, it takes the time points
+#     with the relevance over the threshold as the starting point for further changes 
+#     of the time series.
+#     => So r_i > e describes the starting point to extract the sub-sequence 
+#        t_sub=(t_i, t_{i+1}, ..., t_{i+n_s}) with length n_s
+#
+# (b) The sub-sequence then gets reversed to t[sub] = (t[i+n[s]], ..., t[i+1], t[i])
+#     and inserted back to the time series
+#
+# (c) Further the subsequence gets set to zero to test the method
+#
+# (d) The same procedure is done with a random time point positions to verify the
+#     time points relevance again
+#
+## (3) Mean Time Points (mean sub sequence)
+#
+# (a) Same as swap time points, but instead of swapping the time points the mean
+#     is calculated
+#     t_sub = (t_i, ..., t_{i+n_s})
+#     mean(t_sub) = (mean(t_sub)_i, ..., mean(t_sub)_{i+n_s})
+#
+#
+# Average changed accuracy
+#
+#
+# Additional options: verbose
+#
+#
+
+
 #
 # Average changed accuracy
 from os import terminal_size
@@ -115,7 +210,7 @@ from utils.utils import calculate_metrics
 # Average changes accuracies are not calculated here (not meant for here)
 #
 #
-class PerturbationAnalysisUTS:
+class PerturbationAnalysis:
 
     def __init__(self):
         # self.perturbator = UTSPerturbations()
